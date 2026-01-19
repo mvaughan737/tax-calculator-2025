@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tax Calculator 2025 - IRS Form 1040 Assistant</title>
+    <meta name="description"
+        content="Professional AI-powered tax calculator for IRS Form 1040 and 1040-SR with interactive guidance and smart validation.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Save Your Progress</h2>
+                <p>Enter your email to save and download your tax summary</p>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="userFirstName">First Name <span class="required">*</span></label>
+                    <input type="text" id="userFirstName" placeholder="Enter your first name" class="input-field"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="userEmail">Email Address <span class="required">*</span></label>
+                    <input type="email" id="userEmail" placeholder="your.email@example.com" class="input-field"
+                        autocomplete="email" required>
+                    <div id="emailError" class="error-message"></div>
+                </div>
+                <button id="loginBtn" class="btn-primary">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Landing Page -->
+    <div id="landingPage" class="page active">
+        <div class="landing-container">
+            <div class="landing-header">
+                <div class="logo-badge">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <rect width="40" height="40" rx="8" fill="url(#gradient1)" />
+                        <path d="M12 20L18 26L28 14" stroke="white" stroke-width="3" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <defs>
+                            <linearGradient id="gradient1" x1="0" y1="0" x2="40" y2="40">
+                                <stop offset="0%" stop-color="#2563eb" />
+                                <stop offset="100%" stop-color="#10b981" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h1 class="landing-title">Tax Calculator 2025</h1>
+                <p class="landing-subtitle">Federal & Indiana State Tax Calculator with AI Guidance</p>
+
+                <!-- Disclaimer Notice -->
+                <div class="disclaimer-notice">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink: 0;">
+                        <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2" />
+                        <path d="M10 6v4M10 14h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <div>
+                        <strong>For Verification Purposes Only</strong>
+                        <p>This calculator is designed to help you cross-check your tax computations with your
+                            professional tax preparer for accuracy. This tool does not file your taxes and should not be
+                            used as a substitute for professional tax advice.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tax Type Selection -->
+            <div class="tax-type-selection">
+                <h2>Choose Your Tax Calculation</h2>
+                <p class="selection-subtitle">Select which taxes you'd like to calculate</p>
+
+                <div class="tax-type-cards">
+                    <button class="tax-type-card featured" data-tax-type="federal-1040">
+                        <div class="tax-type-icon">🇺🇸</div>
+                        <h3>Federal Tax Only</h3>
+                        <p>IRS Form 1040</p>
+                        <span class="tax-type-badge">Recommended</span>
+                    </button>
+
+                    <button class="tax-type-card" data-tax-type="federal-1040sr">
+                        <div class="tax-type-icon">👴</div>
+                        <h3>Federal Tax for Seniors</h3>
+                        <p>Seniors Only - IRS Form 1040-SR</p>
+                        <span class="tax-type-badge">Age 65+</span>
+                    </button>
+
+                    <button class="tax-type-card" data-tax-type="indiana">
+                        <div class="tax-type-icon">🏛️</div>
+                        <h3>Indiana State Tax Only</h3>
+                        <p>Form IT-40</p>
+                        <span class="tax-type-badge">3.00% Flat Rate</span>
+                    </button>
+
+                    <button class="tax-type-card" data-tax-type="combined">
+                        <div class="tax-type-icon">⭐</div>
+                        <h3>Federal & Indiana</h3>
+                        <p>Complete Tax Picture</p>
+                        <span class="tax-type-badge">Most Complete</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filing Status Selection (Hidden initially) -->
+            <div id="filingStatusSelection" class="filing-status-selection" style="display: none;">
+                <h2>Select Your Filing Status</h2>
+                <p class="selection-subtitle">This determines your standard deduction and tax brackets</p>
+
+                <div class="filing-status-cards">
+                    <button class="filing-status-card" data-filing-status="single">
+                        <div class="status-icon">👤</div>
+                        <h3>Single</h3>
+                        <p class="status-details">Standard Deduction: $17,750+</p>
+                    </button>
+
+                    <button class="filing-status-card" data-filing-status="married">
+                        <div class="status-icon">💑</div>
+                        <h3>Married Filing Jointly</h3>
+                        <p class="status-details">Standard Deduction: $33,100+</p>
+                    </button>
+
+                    <button class="filing-status-card" data-filing-status="qss">
+                        <div class="status-icon">💔</div>
+                        <h3>Qualifying Surviving Spouse</h3>
+                        <p class="status-details">Standard Deduction: $33,100+</p>
+                    </button>
+
+                    <button class="filing-status-card" data-filing-status="hoh">
+                        <div class="status-icon">👨‍👧‍👦</div>
+                        <h3>Head of Household</h3>
+                        <p class="status-details">Standard Deduction: $25,625+</p>
+                    </button>
+
+                    <button class="filing-status-card" data-filing-status="mfs">
+                        <div class="status-icon">💔💔</div>
+                        <h3>Married Filing Separately</h3>
+                        <p class="status-details">Standard Deduction: $17,350+</p>
+                    </button>
+                </div>
+
+                <button id="backToTaxType" class="btn-text">← Back to Tax Type Selection</button>
+            </div>
+
+            <!-- Indiana County Selection (Hidden initially) -->
+            <div id="countySelection" class="county-selection" style="display: none;">
+                <h2>Select Your Indiana County</h2>
+                <p class="selection-subtitle">County tax rates vary across Indiana</p>
+
+                <div class="county-selector-wrapper">
+                    <select id="indianaCounty" class="county-select">
+                        <option value="">Choose your county...</option>
+                        <option value="marion" data-rate="2.02">Marion County (Indianapolis) - 2.02%</option>
+                        <option value="lake" data-rate="1.77">Lake County - 1.77%</option>
+                        <option value="allen" data-rate="1.41">Allen County (Fort Wayne) - 1.41%</option>
+                        <option value="hamilton" data-rate="1.06">Hamilton County - 1.06%</option>
+                        <option value="howard" data-rate="1.95">Howard County - 1.95%</option>
+                        <option value="miami" data-rate="2.54">Miami County - 2.54%</option>
+                        <option value="st-joseph" data-rate="1.77">St. Joseph County (South Bend) - 1.77%</option>
+                        <option value="elkhart" data-rate="1.68">Elkhart County - 1.68%</option>
+                        <option value="tippecanoe" data-rate="1.25">Tippecanoe County (Lafayette) - 1.25%</option>
+                        <option value="vanderburgh" data-rate="1.80">Vanderburgh County (Evansville) - 1.80%</option>
+                        <option value="other" data-rate="1.50">Other County - 1.50% (avg)</option>
+                    </select>
+                    <button id="confirmCounty" class="btn-primary" disabled>Continue</button>
+                </div>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">💡</div>
+                    <h3>Hover-to-Explain</h3>
+                    <p>Instant AI explanations for every form field</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✓</div>
+                    <h3>Smart Validation</h3>
+                    <p>Pre-check your form before submission</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📄</div>
+                    <h3>PDF Export</h3>
+                    <p>Download your complete tax summary</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Privacy First</h3>
+                    <p>No SSN or bank info required</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Tax Form Page -->
+    <div id="formPage" class="page">
+        <div class="app-container">
+            <!-- Sidebar Navigation -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="logo-small">
+                        <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                            <rect width="40" height="40" rx="8" fill="url(#gradient2)" />
+                            <path d="M12 20L18 26L28 14" stroke="white" stroke-width="3" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <defs>
+                                <linearGradient id="gradient2" x1="0" y1="0" x2="40" y2="40">
+                                    <stop offset="0%" stop-color="#2563eb" />
+                                    <stop offset="100%" stop-color="#10b981" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 id="formTypeTitle">Form 1040</h3>
+                        <p id="filingStatusDisplay" style="font-size: 0.9em; color: #64748b; margin: 4px 0;"></p>
+                        <p id="userGreeting">Welcome!</p>
+                    </div>
+                </div>
+
+                <!-- Live Summary Widget -->
+                <div class="sidebar-summary-widget">
+                    <div class="summary-item">
+                        <span>Total Tax:</span>
+                        <span id="sideTotalTax">$0.00</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Total Payments:</span>
+                        <span id="sideTotalPayments">$0.00</span>
+                    </div>
+                    <div class="summary-divider"></div>
+                    <div class="summary-item main">
+                        <span id="sideStatusText">Amount Owed:</span>
+                        <span id="sideStatusAmount" class="owed">$0.00</span>
+                    </div>
+                </div>
+
+                <nav class="milestone-nav">
+                    <div class="milestone-item active" data-section="income">
+                        <div class="milestone-indicator"></div>
+                        <span>Income</span>
+                    </div>
+                    <div class="milestone-item" data-section="deductions">
+                        <div class="milestone-indicator"></div>
+                        <span>Deductions</span>
+                    </div>
+                    <div class="milestone-item" data-section="credits">
+                        <div class="milestone-indicator"></div>
+                        <span>Credits</span>
+                    </div>
+                    <div class="milestone-item" data-section="summary">
+                        <div class="milestone-indicator"></div>
+                        <span>Summary</span>
+                    </div>
+                    <div class="milestone-item" data-section="indiana" style="display: none;">
+                        <div class="milestone-indicator"></div>
+                        <span>Indiana State Tax Form</span>
+                    </div>
+                    <div class="milestone-item" data-section="indiana-summary" style="display: none;">
+                        <div class="milestone-indicator"></div>
+                        <span>State Tax Calculations</span>
+                    </div>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <button id="saveProgressBtn" class="btn-secondary">💾 Save Progress</button>
+                    <button id="backToHomeBtn" class="btn-text">← Back to Home</button>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <!-- AI Search Bar -->
+                <div class="search-container">
+                    <div class="search-bar">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="2" />
+                            <path d="M14 14L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        <input type="text" id="aiSearch"
+                            placeholder="Search for help... (e.g., Wages, Dividends, Credits)">
+                    </div>
+                    <div id="searchResults" class="search-results"></div>
+                </div>
+
+                <!-- Income Section -->
+                <section id="incomeSection" class="form-section active">
+                    <h2 class="section-title">Income</h2>
+                    <p class="section-subtitle">Attach Form(s) W-2 here. Also attach Forms W-2G and 1099-R if tax was
+                        withheld.</p>
+
+                    <!-- Line 1: Wages Section -->
+                    <div class="form-subsection">
+                        <h3 class="subsection-title">Wages, Salaries, and Tips</h3>
+
+                        <div class="form-group tooltip-container">
+                            <label for="line1a">1a Total amount from Form(s) W-2, box 1</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Enter the total from box 1 of all your W-2 forms.
+                                    This is your wages, tips, and other compensation from your employer(s).
+                                </div>
+                            </div>
+                            <input type="number" id="line1a" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+
+                        <!-- Advanced Wage Details (Collapsible) -->
+                        <div class="collapsible-section">
+                            <button type="button" class="collapsible-toggle" data-target="advancedWageDetails">
+                                <span class="toggle-icon">▶</span>
+                                <span class="toggle-text">Show Additional Wage Details (Lines 1b-1h)</span>
+                            </button>
+                            <div id="advancedWageDetails" class="collapsible-content" style="display: none;">
+                                <div class="form-group tooltip-container">
+                                    <label for="line1b">1b Household employee wages not reported on Form(s) W-2</label>
+                                    <div class="tooltip">
+                                        <span class="tooltip-icon">?</span>
+                                        <div class="tooltip-content">
+                                            <strong>What goes here:</strong> Wages paid to household employees (nanny,
+                                            housekeeper, etc.) if you didn't file Form W-2 for them.
+                                        </div>
+                                    </div>
+                                    <input type="number" id="line1b" class="input-field" placeholder="$0.00"
+                                        step="0.01">
+                                </div>
+
+                                <div class="form-group tooltip-container">
+                                    <label for="line1c">1c Tip income not reported on line 1a</label>
+                                    <div class="tooltip">
+                                        <span class="tooltip-icon">?</span>
+                                        <div class="tooltip-content">
+                                            <strong>What goes here:</strong> Tips you received but didn't report to your
+                                            employer. See instructions.
+                                        </div>
+                                    </div>
+                                    <input type="number" id="line1c" class="input-field" placeholder="$0.00"
+                                        step="0.01">
+                                </div>
+
+                                <div class="form-group tooltip-container">
+                                    <label for="line1d">1d Medicaid waiver payments not reported on Form(s) W-2</label>
+                                    <div class="tooltip">
+                                        <span class="tooltip-icon">?</span>
+                                        <div class="tooltip-content">
+                                            <strong>What goes here:</strong> Payments received for caring for someone in
+                                            your home under a Medicaid waiver program.
+                                        </div>
+                                    </div>
+                                    <input type="number" id="line1d" class="input-field" placeholder="$0.00"
+                                        step="0.01">
+                                </div>
+
+                                <div class="form-group tooltip-container">
+                                    <label for="line1e">1e Taxable dependent care benefits from Form 2441, line
+                                        26</label>
+                                    <div class="tooltip">
+                                        <span class="tooltip-icon">?</span>
+                                        <div class="tooltip-content">
+                                            <strong>What goes here:</strong> Taxable portion of dependent care benefits
+                                            provided by your employer.
+                                        </div>
+                                    </div>
+                                    <input type="number" id="line1e" class="input-field" placeholder="$0.00"
+                                        step="0.01">
+                                </div>
+
+                                <div class="form-group tooltip-container">
+                                    <label for="line1f">1f Employer-provided adoption benefits from Form 8839, line
+                                        31</label>
+                                    <div class="tooltip">
+                                        <span class="tooltip-icon">?</span>
+                                        <div class="tooltip-content">
+                                            <strong>What goes here:</strong> Taxable portion of adoption benefits
+                                            provided by your employer.
+                                        </div>
+                                    </div>
+                                    <input type="number" id="line1f" class="input-field" placeholder="$0.00"
+                                        step="0.01">
+                                </div>
+
+                                <div class="form-group tooltip-container">
+                                    <label for="line1g">1g Wages from Form 8919, line 6</label>
+                                    <div class="tooltip">
+                                        <span class="tooltip-icon">?</span>
+                                        <div class="tooltip-content">
+                                            <strong>What goes here:</strong> Wages from employers who didn't withhold
+                                            Social Security and Medicare taxes.
+                                        </div>
+                                    </div>
+                                    <input type="number" id="line1g" class="input-field" placeholder="$0.00"
+                                        step="0.01">
+                                </div>
+
+                                <div class="form-group tooltip-container">
+                                    <label for="line1h">1h Other earned income (Enter type and amount):</label>
+                                    <div class="tooltip">
+                                        <span class="tooltip-icon">?</span>
+                                        <div class="tooltip-content">
+                                            <strong>What goes here:</strong> Any other earned income not covered in
+                                            lines 1a-1g. See instructions for details.
+                                        </div>
+                                    </div>
+                                    <input type="number" id="line1h" class="input-field" placeholder="$0.00"
+                                        step="0.01">
+                                </div>
+
+                                <div class="form-group checkbox-group">
+                                    <label>
+                                        <input type="checkbox" id="line1i" class="checkbox-field">
+                                        <span>1i Nontaxable combat pay election (see instructions)</span>
+                                    </label>
+                                    <input type="number" id="line1iAmount" class="input-field inline-input"
+                                        placeholder="$0.00" step="0.01" style="width: 150px; margin-left: 10px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group calculated-field">
+                            <label for="line1z">1z Add lines 1a through 1h</label>
+                            <input type="text" id="line1z" class="input-field calculated" placeholder="$0.00" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Line 2: Interest -->
+                    <div class="form-subsection">
+                        <h3 class="subsection-title">Interest and Dividends</h3>
+
+                        <div class="form-row">
+                            <div class="form-group tooltip-container half-width">
+                                <label for="line2a">2a Tax-exempt interest</label>
+                                <div class="tooltip">
+                                    <span class="tooltip-icon">?</span>
+                                    <div class="tooltip-content">
+                                        <strong>What goes here:</strong> Interest from municipal bonds and other
+                                        tax-exempt sources. From Form 1099-INT.
+                                    </div>
+                                </div>
+                                <input type="number" id="line2a" class="input-field" placeholder="$0.00" step="0.01">
+                            </div>
+
+                            <div class="form-group tooltip-container half-width">
+                                <label for="line2b">2b Taxable interest</label>
+                                <div class="tooltip">
+                                    <span class="tooltip-icon">?</span>
+                                    <div class="tooltip-content">
+                                        <strong>What goes here:</strong> Interest from savings accounts, CDs, bonds, and
+                                        other taxable sources. From Form 1099-INT.
+                                    </div>
+                                </div>
+                                <input type="number" id="line2b" class="input-field" placeholder="$0.00" step="0.01">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group tooltip-container half-width">
+                                <label for="line3a">3a Qualified dividends</label>
+                                <div class="tooltip">
+                                    <span class="tooltip-icon">?</span>
+                                    <div class="tooltip-content">
+                                        <strong>What goes here:</strong> Dividends that qualify for lower tax rates.
+                                        From Form 1099-DIV, box 1b.
+                                    </div>
+                                </div>
+                                <input type="number" id="line3a" class="input-field" placeholder="$0.00" step="0.01">
+                            </div>
+
+                            <div class="form-group tooltip-container half-width">
+                                <label for="line3b">3b Ordinary dividends</label>
+                                <div class="tooltip">
+                                    <span class="tooltip-icon">?</span>
+                                    <div class="tooltip-content">
+                                        <strong>What goes here:</strong> Total dividends from stocks and mutual funds.
+                                        From Form 1099-DIV, box 1a.
+                                    </div>
+                                </div>
+                                <input type="number" id="line3b" class="input-field" placeholder="$0.00" step="0.01">
+                            </div>
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <label>3c Check if your child's dividends are included in:</label>
+                            <div class="checkbox-inline-group">
+                                <label><input type="checkbox" id="line3c1"> 1 Line 3a</label>
+                                <label><input type="checkbox" id="line3c2"> 2 Line 3b</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Line 4: IRA Distributions -->
+                    <div class="form-row">
+                        <div class="form-group tooltip-container half-width">
+                            <label for="line4a">4a IRA distributions</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Total IRA distributions before determining taxable
+                                    amount. From Form 1099-R, box 1.
+                                </div>
+                            </div>
+                            <input type="number" id="line4a" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+
+                        <div class="form-group tooltip-container half-width">
+                            <label for="line4b">4b Taxable amount</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Taxable portion of IRA distributions. From Form
+                                    1099-R, box 2a.
+                                </div>
+                            </div>
+                            <input type="number" id="line4b" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label>4c Check if (see instructions):</label>
+                        <div class="checkbox-inline-group">
+                            <label><input type="checkbox" id="line4c1"> 1 Rollover</label>
+                            <label><input type="checkbox" id="line4c2"> 2 QCD</label>
+                            <label><input type="checkbox" id="line4c3"> 3 <input type="text" id="line4c3Text"
+                                    class="inline-text-input" placeholder="Other" style="width: 100px;"></label>
+                        </div>
+                    </div>
+
+                    <!-- Line 5: Pensions and Annuities -->
+                    <div class="form-row">
+                        <div class="form-group tooltip-container half-width">
+                            <label for="line5a">5a Pensions and annuities</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Total pensions and annuities before determining
+                                    taxable amount. From Form 1099-R, box 1.
+                                </div>
+                            </div>
+                            <input type="number" id="line5a" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+
+                        <div class="form-group tooltip-container half-width">
+                            <label for="line5b">5b Taxable amount</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Taxable portion of pensions and annuities. From
+                                    Form 1099-R, box 2a.
+                                </div>
+                            </div>
+                            <input type="number" id="line5b" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label>5c Check if (see instructions):</label>
+                        <div class="checkbox-inline-group">
+                            <label><input type="checkbox" id="line5c1"> 1 Rollover</label>
+                            <label><input type="checkbox" id="line5c2"> 2 PSO</label>
+                            <label><input type="checkbox" id="line5c3"> 3 <input type="text" id="line5c3Text"
+                                    class="inline-text-input" placeholder="Other" style="width: 100px;"></label>
+                        </div>
+                    </div>
+
+                    <!-- Line 6: Social Security -->
+                    <div class="form-row">
+                        <div class="form-group tooltip-container half-width">
+                            <label for="line6a">6a Social security benefits</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Total Social Security benefits received. From Form
+                                    SSA-1099, box 5.
+                                </div>
+                            </div>
+                            <input type="number" id="line6a" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+
+                        <div class="form-group tooltip-container half-width">
+                            <label for="line6b">6b Taxable amount</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <div
+                                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <strong style="margin-bottom: 0;">Prompt to be Inserted into ChatGPT:</strong>
+                                        <button id="copyPrompt6b" class="btn-copy-small" title="Copy prompt">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                stroke-linejoin="round">
+                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1">
+                                                </path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div id="copyFeedback6b"
+                                        style="display: none; color: #10b981; font-size: 0.75rem; margin-bottom: 0.5rem; text-align: right;">
+                                        ✓ Copied!</div>
+                                    <em>"<span id="promptText6b">Give me Schedule B Part 1, 2 Totals and tell me what
+                                            lines in the 1040 to input them. Then give me the Schedule D Part 3 Total
+                                            and tell me what lines in the 1040 to input them. No other information, just
+                                            the Totals of each part, and what line in the 1040 to input them? Also, my
+                                            combined Social Security is 56,185.00, calculate what my taxable income is
+                                            for 1040 line 6b. Put them in a Table format. Put the sources in another
+                                            column.</span>"</em><br><br>
+                                    <strong>Steps:</strong>
+                                    <ol style="margin-top: 5px; padding-left: 20px;">
+                                        <li>Upload the Chase Documents to get Dividends & Capital Gains/Losses</li>
+                                        <li>Add the Combined SS earned for the year and change the total above in Blue.
+                                        </li>
+                                        <li>Run the Prompt above in GPT to get your info and what lines to put the info
+                                            in.</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            <input type="number" id="line6b" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <input type="checkbox" id="line6c">
+                            <span>6c If you elect to use the lump-sum election method, check here (see
+                                instructions)</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <input type="checkbox" id="line6d">
+                            <span>6d If you are married filing separately and lived apart from your spouse the entire
+                                year (see inst.), check here</span>
+                        </label>
+                    </div>
+
+                    <!-- Line 7: Capital Gains -->
+                    <div class="form-group tooltip-container">
+                        <label for="line7">7 Capital gain or (loss). Attach Schedule D if required</label>
+                        <div class="tooltip">
+                            <span class="tooltip-icon">?</span>
+                            <div class="tooltip-content">
+                                <strong>What goes here:</strong> Net capital gain or loss from selling investments. From
+                                Schedule D or Form 8949.
+                            </div>
+                        </div>
+                        <input type="number" id="line7" class="input-field" placeholder="$0.00" step="0.01">
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label>7b Check if:</label>
+                        <div class="checkbox-inline-group">
+                            <label><input type="checkbox" id="line7b1"> Schedule D not required</label>
+                            <label><input type="checkbox" id="line7b2"> Includes child's capital gain or (loss)</label>
+                        </div>
+                    </div>
+
+                    <!-- Line 8: Additional Income -->
+                    <div class="form-group tooltip-container">
+                        <label for="line8">8 Additional income from Schedule 1, line 10</label>
+                        <div class="tooltip">
+                            <span class="tooltip-icon">?</span>
+                            <div class="tooltip-content">
+                                <strong>What goes here:</strong> Other income such as unemployment, alimony, business
+                                income, etc. See Schedule 1.
+                            </div>
+                        </div>
+                        <input type="number" id="line8" class="input-field" placeholder="$0.00" step="0.01">
+                    </div>
+
+                    <!-- Line 9: Total Income -->
+                    <div class="form-group calculated-field">
+                        <label for="line9">9 Add lines 1z, 2b, 3b, 4b, 5b, 6b, 7a, and 8. This is your <strong>total
+                                income</strong></label>
+                        <input type="number" id="line9" class="input-field calculated" placeholder="$0.00" step="0.01"
+                            readonly>
+                    </div>
+
+                    <!-- Line 10: Adjustments -->
+                    <div class="form-group tooltip-container">
+                        <label for="line10">10 Adjustments to income from Schedule 1, line 26</label>
+                        <div class="tooltip">
+                            <span class="tooltip-icon">?</span>
+                            <div class="tooltip-content">
+                                <strong>What goes here:</strong> Deductions that reduce your income, such as educator
+                                expenses, student loan interest, IRA contributions, etc. See Schedule 1.
+                            </div>
+                        </div>
+                        <input type="number" id="line10" class="input-field" placeholder="$0.00" step="0.01">
+                    </div>
+
+                    <!-- Line 11a: AGI -->
+                    <div class="form-group calculated-field highlight-field">
+                        <label for="line11a">11a Subtract line 10 from line 9. This is your <strong>adjusted gross
+                                income</strong></label>
+                        <input type="number" id="line11a" class="input-field calculated" placeholder="$0.00" step="0.01"
+                            readonly>
+                    </div>
+
+                    <button class="btn-primary next-section" data-next="deductions">Continue to Tax and Credits
+                        →</button>
+                </section>
+
+                <!-- Tax and Credits Section -->
+                <section id="deductionsSection" class="form-section">
+                    <h2 class="section-title">Tax and Credits</h2>
+                    <p class="section-subtitle">Standard Deduction, Itemized Deductions (from Schedule A), or Qualified
+                        Business Income Deduction (from Form 8995 or Form 8995-A)</p>
+
+                    <!-- Line 11b: AGI from previous page -->
+                    <div class="form-group calculated-field">
+                        <label for="line11b">11b Amount from line 11a (adjusted gross income)</label>
+                        <input type="number" id="line11b" class="input-field calculated" placeholder="$0.00" step="0.01"
+                            readonly>
+                    </div>
+
+                    <!-- Deduction Optimizer Tip -->
+                    <div id="deductionOptimizerTip" class="optimizer-tip" style="display: none;">
+                        <div class="tip-icon">💡</div>
+                        <div class="tip-content">
+                            <h4 id="optimizerTitle">Deduction Tip</h4>
+                            <p id="optimizerText"></p>
+                        </div>
+                    </div>
+
+                    <!-- Line 12: Standard Deduction -->
+                    <div class="form-subsection">
+                        <h3 class="subsection-title">Standard Deduction</h3>
+
+                        <div class="form-group checkbox-group">
+                            <label>12a Someone can claim:</label>
+                            <div class="checkbox-inline-group">
+                                <label><input type="checkbox" id="line12a1"> You as a dependent</label>
+                                <label><input type="checkbox" id="line12a2"> Your spouse as a dependent</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <label>12b <input type="checkbox" id="line12b"> Spouse itemizes on a separate return</label>
+                            <label style="margin-left: 2rem;">12c <input type="checkbox" id="line12c"> You were a
+                                dual-status alien</label>
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <label>12d You:</label>
+                            <div class="checkbox-inline-group">
+                                <label><input type="checkbox" id="line12d1"> Were born before January 2, 1961</label>
+                                <label><input type="checkbox" id="line12d2"> Are blind</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <label>Spouse:</label>
+                            <div class="checkbox-inline-group">
+                                <label><input type="checkbox" id="line12dSpouse1"> Was born before January 2,
+                                    1961</label>
+                                <label><input type="checkbox" id="line12dSpouse2"> Is blind</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="line12e">12e Standard deductions (from Schedule A)</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Your standard deduction is based on your filing
+                                    status and the number of boxes you check on line 12d (for age 65+ and blind status).
+                                    The amount is automatically calculated from the IRS Standard Deduction Chart.
+                                </div>
+                            </div>
+                            <input type="number" id="line12e" class="input-field calculated" placeholder="$0.00"
+                                step="0.01" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Line 13: Additional Deductions -->
+                    <div class="form-group tooltip-container">
+                        <label for="line13a">13a Qualified business income deduction from Form 8995 or Form
+                            8995-A</label>
+                        <div class="tooltip">
+                            <span class="tooltip-icon">?</span>
+                            <div class="tooltip-content">
+                                <strong>What goes here:</strong> If you have qualified business income from a
+                                pass-through entity, enter the deduction from Form 8995 or 8995-A.
+                            </div>
+                        </div>
+                        <input type="number" id="line13a" class="input-field" placeholder="$0.00" step="0.01">
+                    </div>
+
+                    <div class="form-group tooltip-container">
+                        <label for="line13b">13b Additional deductions from Schedule 1-A, line 38</label>
+                        <div class="tooltip">
+                            <span class="tooltip-icon">?</span>
+                            <div class="tooltip-content">
+                                <strong>What goes here:</strong> Other deductions from Schedule 1-A if applicable.
+                            </div>
+                        </div>
+                        <input type="number" id="line13b" class="input-field" placeholder="$0.00" step="0.01">
+                    </div>
+
+                    <!-- Line 14: Total Deductions -->
+                    <div class="form-group calculated-field">
+                        <label for="line14">14 Add lines 12e, 13a, and 13b</label>
+                        <input type="number" id="line14" class="input-field calculated" placeholder="$0.00" step="0.01"
+                            readonly>
+                    </div>
+
+                    <!-- Line 15: Taxable Income -->
+                    <div class="form-group calculated-field highlight-field">
+                        <label for="line15">15 Subtract line 14 from line 11b. If zero or less, enter -0-. This is your
+                            <strong>taxable income</strong></label>
+                        <input type="number" id="line15" class="input-field calculated" placeholder="$0.00" step="0.01"
+                            readonly>
+                    </div>
+
+                    <!-- Line 16: Tax -->
+                    <div class="form-subsection">
+                        <h3 class="subsection-title">Tax Calculation</h3>
+
+                        <div class="form-group tooltip-container">
+                            <label for="line16">16 Tax (see instructions). Check if any from:</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Your federal income tax calculated from the tax
+                                    tables or using the Qualified Dividends and Capital Gain Tax Worksheet.
+                                </div>
+                            </div>
+                            <input type="number" id="line16" class="input-field calculated" placeholder="$0.00"
+                                step="0.01" readonly>
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <div class="checkbox-inline-group">
+                                <label><input type="checkbox" id="line16Form1"> 1 Form(s) 8814</label>
+                                <label><input type="checkbox" id="line16Form2"> 2 Form(s) 4972</label>
+                                <label><input type="checkbox" id="line16Form3"> 3 <input type="text"
+                                        id="line16Form3Text" class="inline-text-input" placeholder="Other"
+                                        style="width: 100px;"></label>
+                            </div>
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="line17">17 Amount from Schedule 2, line 3</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Additional taxes from Schedule 2, such as
+                                    self-employment tax, household employment taxes, etc.
+                                </div>
+                            </div>
+                            <input type="number" id="line17" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+
+                        <div class="form-group calculated-field">
+                            <label for="line18">18 Add lines 16 and 17</label>
+                            <input type="number" id="line18" class="input-field calculated" placeholder="$0.00"
+                                step="0.01" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Lines 19-21: Credits -->
+                    <div class="form-subsection">
+                        <h3 class="subsection-title">Tax Credits</h3>
+
+                        <div class="form-group tooltip-container">
+                            <label for="line19">19 Child tax credit or credit for other dependents from Schedule
+                                8812</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> $2,000 per qualifying child under 17, or $500 for
+                                    other dependents. See Schedule 8812.
+                                </div>
+                            </div>
+                            <input type="number" id="line19" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="line20">20 Amount from Schedule 3, line 8</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Nonrefundable credits from Schedule 3, including
+                                    education credits, retirement savings contributions credit, etc.
+                                </div>
+                            </div>
+                            <input type="number" id="line20" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+
+                        <div class="form-group calculated-field">
+                            <label for="line21">21 Add lines 19 and 20</label>
+                            <input type="number" id="line21" class="input-field calculated" placeholder="$0.00"
+                                step="0.01" readonly>
+                        </div>
+
+                        <div class="form-group calculated-field">
+                            <label for="line22">22 Subtract line 21 from line 18. If zero or less, enter -0-</label>
+                            <input type="number" id="line22" class="input-field calculated" placeholder="$0.00"
+                                step="0.01" readonly>
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="line23">23 Other taxes, including self-employment tax, from Schedule 2, line
+                                21</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Additional taxes such as self-employment tax,
+                                    additional Medicare tax, repayment of first-time homebuyer credit, etc.
+                                </div>
+                            </div>
+                            <input type="number" id="line23" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+
+                        <div class="form-group calculated-field highlight-field">
+                            <label for="line24">24 Add lines 22 and 23. This is your <strong>total tax</strong></label>
+                            <input type="number" id="line24" class="input-field calculated" placeholder="$0.00"
+                                step="0.01" readonly>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary next-section" data-next="credits">Continue to Payments →</button>
+                </section>
+
+                <!-- Payments and Refundable Credits Section -->
+                <section id="creditsSection" class="form-section">
+                    <h2 class="section-title">Payments and Refundable Credits</h2>
+                    <p class="section-subtitle">Federal Income Tax Withheld, Estimated Tax Payments, and Refundable
+                        Credits</p>
+
+                    <!-- Line 25: Federal Income Tax Withheld -->
+                    <div class="form-subsection">
+                        <h3 class="subsection-title">Federal Income Tax Withheld</h3>
+
+                        <div class="form-group tooltip-container">
+                            <label for="line25a">25a Federal income tax withheld from Form(s) W-2</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Total federal income tax withheld from all your W-2
+                                    forms (Box 2). Add up all W-2s if you had multiple jobs.
+                                </div>
+                            </div>
+                            <input type="number" id="line25a" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="line25b">25b Federal income tax withheld from Form(s) 1099</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Federal tax withheld from 1099 forms (interest,
+                                    dividends, etc.). Check Box 4 on Form 1099-INT or Box 4 on Form 1099-DIV.
+                                </div>
+                            </div>
+                            <input type="number" id="line25b" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="line25c">25c Other federal income tax withheld</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Federal tax withheld from other sources such as
+                                    Form 1099-R (retirement distributions), unemployment compensation, or Social
+                                    Security benefits.
+                                </div>
+                            </div>
+                            <input type="number" id="line25c" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+
+                        <div class="form-group calculated-field">
+                            <label for="line25d">25d Add lines 25a, 25b, and 25c</label>
+                            <input type="number" id="line25d" class="input-field calculated" placeholder="$0.00"
+                                step="0.01" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Line 26: Estimated Tax Payments -->
+                    <div class="form-group tooltip-container">
+                        <label for="line26">26 2025 estimated tax payments and amount applied from 2024 return</label>
+                        <div class="tooltip">
+                            <span class="tooltip-icon">?</span>
+                            <div class="tooltip-content">
+                                <strong>What goes here:</strong> Total of all estimated tax payments you made during
+                                2025 (quarterly payments) plus any overpayment from your 2024 return that you applied to
+                                2025.
+                            </div>
+                        </div>
+                        <input type="number" id="line26" class="input-field" placeholder="$0.00" step="0.01">
+                    </div>
+
+                    <!-- Refundable Credits -->
+                    <div class="form-subsection">
+                        <h3 class="subsection-title">Refundable Credits</h3>
+
+                        <div class="form-group tooltip-container">
+                            <label for="line27">27 Earned income credit (EIC)</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Refundable credit for low to moderate income
+                                    workers. Use the EIC worksheet in the instructions to calculate. Amount varies based
+                                    on income and number of qualifying children.
+                                </div>
+                            </div>
+                            <input type="number" id="line27" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <label><input type="checkbox" id="line27Checkbox"> Nontaxable combat pay election</label>
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="line28">28 Additional child tax credit from Schedule 8812</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> The refundable portion of the child tax credit. If
+                                    your child tax credit exceeds your tax liability, you may be eligible for this
+                                    additional refundable credit.
+                                </div>
+                            </div>
+                            <input type="number" id="line28" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="line29">29 American opportunity credit from Form 8863, line 8</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Refundable education credit for the first 4 years
+                                    of post-secondary education. Up to $2,500 per eligible student, with 40% ($1,000)
+                                    refundable.
+                                </div>
+                            </div>
+                            <input type="number" id="line29" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="line30">30 Recovery rebate credit</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Credit for any stimulus payments you were eligible
+                                    for but didn't receive. Use the worksheet in the instructions to calculate.
+                                </div>
+                            </div>
+                            <input type="number" id="line30" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="line31">31 Amount from Schedule 3, line 15</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>What goes here:</strong> Other payments and refundable credits from Schedule
+                                    3, such as net premium tax credit, amount paid with extension, excess Social
+                                    Security tax withheld, fuel tax credit, etc.
+                                </div>
+                            </div>
+                            <input type="number" id="line31" class="input-field" placeholder="$0.00" step="0.01">
+                        </div>
+                    </div>
+
+                    <!-- Line 32: Total Other Payments -->
+                    <div class="form-group calculated-field">
+                        <label for="line32">32 Add lines 26, 27, 28, 29, 30, and 31. These are your total other payments
+                            and refundable credits</label>
+                        <input type="number" id="line32" class="input-field calculated" placeholder="$0.00" step="0.01"
+                            readonly>
+                    </div>
+
+                    <!-- Line 33: Total Payments -->
+                    <div class="form-group calculated-field highlight-field">
+                        <label for="line33">33 Add lines 25d and 32. These are your <strong>total
+                                payments</strong></label>
+                        <input type="number" id="line33" class="input-field calculated" placeholder="$0.00" step="0.01"
+                            readonly>
+                    </div>
+
+                    <!-- Refund Section (Conditional) -->
+                    <div id="refundSection" class="conditional-section">
+                        <div class="form-subsection refund-highlight">
+                            <h3 class="subsection-title">🎉 Refund</h3>
+
+                            <div class="form-group calculated-field refund-amount">
+                                <label for="line34">34 If line 33 is more than line 24, subtract line 24 from line 33.
+                                    This is the amount you <strong>overpaid</strong></label>
+                                <input type="number" id="line34" class="input-field calculated" placeholder="$0.00"
+                                    step="0.01" readonly>
+                            </div>
+
+                            <div class="form-group tooltip-container">
+                                <label for="line35a">35a Amount of line 34 you want <strong>refunded to
+                                        you</strong></label>
+                                <div class="tooltip">
+                                    <span class="tooltip-icon">?</span>
+                                    <div class="tooltip-content">
+                                        <strong>What goes here:</strong> The amount you want refunded. This defaults to
+                                        your full overpayment, but you can choose to apply some or all to next year's
+                                        estimated tax.
+                                    </div>
+                                </div>
+                                <input type="number" id="line35a" class="input-field" placeholder="$0.00" step="0.01">
+                            </div>
+
+                            <!-- Bank Account Information -->
+                            <div class="bank-info-section">
+                                <p><strong>Direct Deposit Information (Optional)</strong></p>
+                                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                                    Complete this section to have your refund directly deposited into your bank account.
+                                    Leave blank to receive a paper check.</p>
+
+                                <div class="form-row">
+                                    <div class="form-group tooltip-container half-width">
+                                        <label for="line35b">35b Routing number</label>
+                                        <div class="tooltip">
+                                            <span class="tooltip-icon">?</span>
+                                            <div class="tooltip-content">
+                                                <strong>What goes here:</strong> 9-digit routing number from your check
+                                                or bank statement. This identifies your bank.
+                                            </div>
+                                        </div>
+                                        <input type="text" id="line35b" class="input-field" placeholder="9 digits"
+                                            maxlength="9" pattern="\d{9}">
+                                    </div>
+
+                                    <div class="form-group tooltip-container half-width">
+                                        <label for="line35c">35c Account number</label>
+                                        <div class="tooltip">
+                                            <span class="tooltip-icon">?</span>
+                                            <div class="tooltip-content">
+                                                <strong>What goes here:</strong> Your bank account number (up to 17
+                                                digits). Found on your check or bank statement.
+                                            </div>
+                                        </div>
+                                        <input type="text" id="line35c" class="input-field" placeholder="Account number"
+                                            maxlength="17">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>35d Type:</label>
+                                    <div class="account-type-group">
+                                        <label class="radio-option">
+                                            <input type="radio" name="accountType" id="line35dChecking"
+                                                value="checking">
+                                            <span class="radio-custom"></span>
+                                            <span class="radio-label">Checking</span>
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="accountType" id="line35dSavings" value="savings">
+                                            <span class="radio-custom"></span>
+                                            <span class="radio-label">Savings</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group tooltip-container">
+                                <label for="line36">36 Amount of line 34 you want <strong>applied to your 2026 estimated
+                                        tax</strong></label>
+                                <div class="tooltip">
+                                    <span class="tooltip-icon">?</span>
+                                    <div class="tooltip-content">
+                                        <strong>What goes here:</strong> If you want to apply part or all of your
+                                        overpayment to next year's estimated tax instead of receiving a refund, enter
+                                        that amount here.
+                                    </div>
+                                </div>
+                                <input type="number" id="line36" class="input-field" placeholder="$0.00" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Amount Owed Section (Conditional) -->
+                    <div id="owedSection" class="conditional-section">
+                        <div class="form-subsection owed-highlight">
+                            <h3 class="subsection-title">⚠️ Amount You Owe</h3>
+
+                            <div class="form-group calculated-field owe-amount">
+                                <label for="line37">37 <strong>Amount you owe.</strong> Subtract line 33 from line
+                                    24</label>
+                                <input type="number" id="line37" class="input-field calculated" placeholder="$0.00"
+                                    step="0.01" readonly>
+                            </div>
+
+                            <div
+                                style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--error); padding: 1rem; border-radius: var(--radius-sm); margin-top: 1rem;">
+                                <p style="margin: 0; font-size: 0.9375rem;"><strong>Payment Due:</strong> April 15, 2026
+                                </p>
+                                <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; color: var(--text-secondary);">You
+                                    can pay online at IRS.gov/payments or mail a check with Form 1040-V.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-navigation">
+                        <button class="btn-secondary" data-prev="credits">← Back to Credits</button>
+                        <button class="btn-primary" data-next="summary">View Federal Summary →</button>
+                    </div>
+                </section>
+
+                <!-- Federal Summary Section -->
+                <section id="summarySection" class="form-section">
+                    <h2 class="section-title">Federal Tax Summary</h2>
+
+                    <div class="summary-card">
+                        <h3>Plain English Summary</h3>
+                        <div id="plainEnglishSummary" class="plain-summary"></div>
+                    </div>
+
+                    <div class="calculation-breakdown">
+                        <div class="calc-row">
+                            <span>Total Income</span>
+                            <span id="summaryIncome">$0.00</span>
+                        </div>
+                        <div class="calc-row">
+                            <span>Total Deductions</span>
+                            <span id="summaryDeductions">-$0.00</span>
+                        </div>
+                        <div class="calc-row highlight">
+                            <span><strong>Taxable Income</strong></span>
+                            <span id="taxableIncome"><strong>$0.00</strong></span>
+                        </div>
+                        <div class="calc-row">
+                            <span>Estimated Federal Tax</span>
+                            <span id="estimatedTax">$0.00</span>
+                        </div>
+                        <div class="calc-row">
+                            <span>Credits & Payments</span>
+                            <span id="summaryCredits">-$0.00</span>
+                        </div>
+                        <div class="calc-row final">
+                            <span id="finalLabel"><strong>Refund</strong></span>
+                            <span id="finalAmount" class="refund"><strong>$0.00</strong></span>
+                        </div>
+                    </div>
+
+                    <div id="validationWarnings" class="validation-warnings"></div>
+
+                    <div class="section-navigation">
+                        <button class="btn-secondary" data-prev="credits">← Back to Credits</button>
+                        <button class="btn-primary" id="continueToIndianaBtn" data-next="indiana">Continue to Indiana
+                            State Form →</button>
+                    </div>
+                </section>
+
+                <!-- Indiana State Tax Form Section -->
+                <section class="form-section" id="indianaSection">
+                    <div class="section-header">
+                        <h2>Indiana State Tax Form (IT-40)</h2>
+                        <p class="section-description">Calculate your Indiana state income tax</p>
+                    </div>
+
+                    <div class="form-subsection">
+                        <h3 class="subsection-title">Income and Adjustments</h3>
+
+                        <div class="form-group calculated-field tooltip-container">
+                            <label for="indianaLine1">1. Federal AGI from Form 1040, line 11</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <strong>Auto-filled:</strong> Copied from your Federal Form 1040 Line 11.
+                                </div>
+                            </div>
+                            <input type="text" id="indianaLine1" class="input-field calculated" placeholder="$0.00"
+                                readonly>
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="indianaLine2">2. Indiana add-backs (Schedule 1)</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    Income items added back for Indiana. Leave blank if none.
+                                </div>
+                            </div>
+                            <input type="number" id="indianaLine2" class="input-field" placeholder="$0.00" step="0.01"
+                                value="0">
+                        </div>
+
+                        <div class="form-group calculated-field">
+                            <label for="indianaLine3">3. Add lines 1 and 2</label>
+                            <input type="text" id="indianaLine3" class="input-field calculated" placeholder="$0.00"
+                                readonly>
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="indianaLine4">4. Indiana deductions (Schedule 2)</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    Deductions for Indiana (e.g., military pay, Social Security). Leave blank if none.
+                                </div>
+                            </div>
+                            <input type="number" id="indianaLine4" class="input-field" placeholder="$0.00" step="0.01"
+                                value="0">
+                        </div>
+
+                        <div class="form-group calculated-field">
+                            <label for="indianaLine5">5. Subtract line 4 from line 3</label>
+                            <input type="text" id="indianaLine5" class="input-field calculated" placeholder="$0.00"
+                                readonly>
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="indianaLine6">6. Indiana exemptions (Schedule 3)</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    $1,000 per dependent. Example: 2 dependents = $2,000.
+                                </div>
+                            </div>
+                            <input type="number" id="indianaLine6" class="input-field" placeholder="$0.00" step="0.01"
+                                value="0">
+                        </div>
+
+                        <div class="form-group calculated-field highlight-field">
+                            <label for="indianaLine7">7. Indiana adjusted gross income</label>
+                            <input type="text" id="indianaLine7" class="input-field calculated" placeholder="$0.00"
+                                readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-subsection">
+                        <h3 class="subsection-title">Tax Calculation</h3>
+
+                        <div class="form-group calculated-field tooltip-container">
+                            <label for="indianaLine8">8. State tax (line 7 × 3% = 0.03)</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    Indiana's flat state rate is 3.00% for 2025.
+                                </div>
+                            </div>
+                            <input type="text" id="indianaLine8" class="input-field calculated" placeholder="$0.00"
+                                readonly>
+                        </div>
+
+                        <div class="form-group calculated-field tooltip-container">
+                            <label for="indianaLine9">9. County tax</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    Based on your selected county rate.
+                                </div>
+                            </div>
+                            <input type="text" id="indianaLine9" class="input-field calculated" placeholder="$0.00"
+                                readonly>
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="indianaLine10">10. Other taxes (Schedule 4)</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    Additional taxes (rare). Leave blank if none.
+                                </div>
+                            </div>
+                            <input type="number" id="indianaLine10" class="input-field" placeholder="$0.00" step="0.01"
+                                value="0">
+                        </div>
+
+                        <div class="form-group calculated-field highlight-field">
+                            <label for="indianaLine11">11. Total Indiana taxes</label>
+                            <input type="text" id="indianaLine11" class="input-field calculated" placeholder="$0.00"
+                                readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-subsection">
+                        <h3 class="subsection-title">Credits and Payments</h3>
+
+                        <div class="form-group tooltip-container">
+                            <label for="indianaLine12">12. Credits from Schedule 5</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    Indiana tax credits (e.g., renter's deduction, unified tax credit). Leave blank if
+                                    none.
+                                </div>
+                            </div>
+                            <input type="number" id="indianaLine12" class="input-field" placeholder="$0.00" step="0.01"
+                                value="0">
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="indianaLine13">13. Offset credits from Schedule 6</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    Credits that offset other amounts owed. Leave blank if none.
+                                </div>
+                            </div>
+                            <input type="number" id="indianaLine13" class="input-field" placeholder="$0.00" step="0.01"
+                                value="0">
+                        </div>
+
+                        <div class="form-group calculated-field">
+                            <label for="indianaLine14">14. Total Indiana credits (add lines 12 and 13)</label>
+                            <input type="text" id="indianaLine14" class="input-field calculated" placeholder="$0.00"
+                                readonly>
+                        </div>
+
+                        <div class="form-group calculated-field">
+                            <label for="indianaLine15">15. Indiana taxes (from line 11)</label>
+                            <input type="text" id="indianaLine15" class="input-field calculated" placeholder="$0.00"
+                                readonly>
+                        </div>
+
+                        <div class="form-group calculated-field highlight-field">
+                            <label for="indianaLine16">16. Overpayment or amount owed</label>
+                            <input type="text" id="indianaLine16" class="input-field calculated" placeholder="$0.00"
+                                readonly>
+                        </div>
+                    </div>
+
+                    <!-- Refund Section (shown if overpayment) -->
+                    <div class="form-subsection" id="indianaRefundSection" style="display: none;">
+                        <h3 class="subsection-title">Refund</h3>
+
+                        <div class="form-group tooltip-container">
+                            <label for="indianaLine17">17. Donations (cannot exceed line 16)</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    Voluntary donations to Indiana programs. Cannot exceed your overpayment.
+                                </div>
+                            </div>
+                            <input type="number" id="indianaLine17" class="input-field" placeholder="$0.00" step="0.01"
+                                value="0">
+                        </div>
+
+                        <div class="form-group calculated-field">
+                            <label for="indianaLine18">18. Overpayment after donations</label>
+                            <input type="text" id="indianaLine18" class="input-field calculated" placeholder="$0.00"
+                                readonly>
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="indianaLine19">19. Amount to apply to 2026 estimated tax</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    Amount from your refund to apply toward next year's estimated tax payments.
+                                </div>
+                            </div>
+                            <input type="number" id="indianaLine19" class="input-field" placeholder="$0.00" step="0.01"
+                                value="0">
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="indianaLine20">20. Penalty for underpayment</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    Penalty from Schedule IT-2210. Leave blank if none.
+                                </div>
+                            </div>
+                            <input type="number" id="indianaLine20" class="input-field" placeholder="$0.00" step="0.01"
+                                value="0">
+                        </div>
+
+                        <div class="form-group calculated-field highlight-field">
+                            <label for="indianaLine21">21. Your refund</label>
+                            <input type="text" id="indianaLine21" class="input-field calculated" placeholder="$0.00"
+                                readonly>
+                        </div>
+                    </div>
+
+                    <!-- Amount Owed Section (shown if taxes > credits) -->
+                    <div class="form-subsection" id="indianaOwedSection" style="display: none;">
+                        <h3 class="subsection-title">Amount You Owe</h3>
+
+                        <div class="form-group calculated-field highlight-field">
+                            <label for="indianaLine23">23. Amount you owe (before penalties)</label>
+                            <input type="text" id="indianaLine23" class="input-field calculated" placeholder="$0.00"
+                                readonly>
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="indianaLine24">24. Penalty if filed after due date</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    Late filing penalty. Leave blank if filed on time.
+                                </div>
+                            </div>
+                            <input type="number" id="indianaLine24" class="input-field" placeholder="$0.00" step="0.01"
+                                value="0">
+                        </div>
+
+                        <div class="form-group tooltip-container">
+                            <label for="indianaLine25">25. Interest if filed after due date</label>
+                            <div class="tooltip">
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    Late payment interest. Leave blank if filed on time.
+                                </div>
+                            </div>
+                            <input type="number" id="indianaLine25" class="input-field" placeholder="$0.00" step="0.01"
+                                value="0">
+                        </div>
+
+                        <div class="form-group calculated-field highlight-field">
+                            <label for="indianaLine26">26. Total amount you owe</label>
+                            <input type="text" id="indianaLine26" class="input-field calculated" placeholder="$0.00"
+                                readonly>
+                        </div>
+                    </div>
+
+                    <div class="section-navigation">
+                        <button class="btn-secondary" data-prev="summary">← Back to Federal Summary</button>
+                        <button class="btn-primary" data-next="indiana-summary">Continue to State Tax Calculations
+                            →</button>
+                    </div>
+                </section>
+
+                <!-- State Tax Calculations (Final Summary) -->
+                <section id="indiana-summarySection" class="form-section">
+                    <h2 class="section-title">State Tax Calculations & Final Summary</h2>
+
+                    <div class="summary-card">
+                        <h3>Final Tax Picture</h3>
+                        <div id="finalPlainEnglishSummary" class="plain-summary"></div>
+                    </div>
+
+                    <div class="calculation-breakdown" id="finalSummaryBreakdown">
+                        <div class="calc-row">
+                            <span>Federal Adjusted Gross Income</span>
+                            <span id="finalFederalAGI">$0.00</span>
+                        </div>
+                        <div class="calc-row">
+                            <span>Federal Tax Liability</span>
+                            <span id="finalFederalTax">$0.00</span>
+                        </div>
+                        <div class="calc-row">
+                            <span>Indiana State & County Tax</span>
+                            <span id="finalIndianaTax">$0.00</span>
+                        </div>
+                        <div class="calc-row highlight">
+                            <span><strong>Total Tax Liability</strong></span>
+                            <span id="finalTotalTax"><strong>$0.00</strong></span>
+                        </div>
+                        <div class="calc-row">
+                            <span>Total Credits & Payments</span>
+                            <span id="finalTotalCredits">$0.00</span>
+                        </div>
+                        <div class="calc-row total">
+                            <span id="finalOverallLabel"><strong>Total Refund</strong></span>
+                            <span id="finalOverallAmount" class="refund">$0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="section-navigation">
+                        <button class="btn-secondary" data-prev="indiana">← Back to Indiana Form</button>
+                        <button class="btn-primary download-pdf">Download Complete Report (PDF)</button>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Emily Voice AI Assistant -->
+    <div id="emilyAssistant" class="emily-assistant">
+        <!-- Floating Button -->
+        <button id="emilyToggle" class="emily-toggle" title="Ask Emily">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="8" r="3" stroke="currentColor" stroke-width="2" />
+                <path d="M4 20c0-4 3.5-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            <span class="emily-pulse"></span>
+        </button>
+
+        <!-- Chat Panel -->
+        <div id="emilyPanel" class="emily-panel">
+            <div class="emily-header">
+                <div class="emily-avatar">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <circle cx="16" cy="16" r="15" fill="url(#emilyGradient)" />
+                        <circle cx="16" cy="12" r="4" fill="white" />
+                        <path d="M8 26c0-4.5 3.5-8 8-8s8 3.5 8 8" fill="white" />
+                        <defs>
+                            <linearGradient id="emilyGradient" x1="0" y1="0" x2="32" y2="32">
+                                <stop offset="0%" stop-color="#8b5cf6" />
+                                <stop offset="100%" stop-color="#ec4899" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="emily-info">
+                    <h3>Emily</h3>
+                    <p>Your Tax Assistant</p>
+                </div>
+                <button id="emilyClose" class="emily-close">×</button>
+            </div>
+
+            <div id="emilyMessages" class="emily-messages">
+                <div class="emily-message">
+                    <div class="message-avatar">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="11" fill="url(#emilyGradient2)" />
+                            <circle cx="12" cy="10" r="3" fill="white" />
+                            <path d="M6 20c0-3.5 2.5-6 6-6s6 2.5 6 6" fill="white" />
+                            <defs>
+                                <linearGradient id="emilyGradient2" x1="0" y1="0" x2="24" y2="24">
+                                    <stop offset="0%" stop-color="#8b5cf6" />
+                                    <stop offset="100%" stop-color="#ec4899" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div class="message-content">
+                        <strong>Emily</strong>
+                        <p>Hi! I'm Emily, your tax assistant. Ask me anything about your taxes by typing your question
+                            below!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="emily-input-container">
+                <input type="text" id="emilyInput" placeholder="Type your tax question here..." />
+                <button id="emilySend" class="emily-send">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M2 10l16-8-8 16-2-8-6-0z" fill="currentColor" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Print Summary for PDF Export -->
+    <div id="printSummary" style="display: none;">
+        <div class="print-header">
+            <h1>TAX SUMMARY 2025</h1>
+            <p id="printFormSubtitle"></p>
+        </div>
+        <div class="print-grid">
+            <div class="print-section">
+                <h3>Personal Information</h3>
+                <p><strong>Taxpayer:</strong> <span id="printUserName"></span></p>
+                <p><strong>Email:</strong> <span id="printUserEmail"></span></p>
+                <p><strong>Filing Status:</strong> <span id="printFilingStatus"></span></p>
+                <p id="printCountyInfo"></p>
+            </div>
+            <div class="print-section">
+                <h3>Tax Calculation</h3>
+                <div class="print-row"><span>Total Income (Line 9):</span> <span id="printTotalIncome"></span></div>
+                <div class="print-row"><span>Adjusted Gross Income (11a):</span> <span id="printAGI"></span></div>
+                <div class="print-row"><span>Total Deductions (Line 14):</span> <span id="printTotalDeductions"></span>
+                </div>
+                <div class="print-row"><span>Taxable Income (Line 15):</span> <span id="printTaxableIncome"></span>
+                </div>
+                <div class="print-divider"></div>
+                <div class="print-row"><span>Total Federal Tax (Line 24):</span> <span id="printFederalTax"></span>
+                </div>
+                <div id="printIndianaSection">
+                    <div class="print-row"><span>Total Indiana Tax (Line 11):</span> <span id="printIndianaTax"></span>
+                    </div>
+                </div>
+                <div class="print-row highlight"><span>TOTAL TAX LIABILITY:</span> <span
+                        id="printTotalLiability"></span></div>
+            </div>
+            <div class="print-section">
+                <h3>Payments & Credits</h3>
+                <div class="print-row"><span>Total Payments (Line 33):</span> <span id="printTotalPayments"></span>
+                </div>
+                <div class="print-divider"></div>
+                <div class="print-row highlight result">
+                    <span id="printResultType">AMOUNT OWED:</span>
+                    <span id="printResultAmount"></span>
+                </div>
+            </div>
+        </div>
+        <div class="print-footer">
+            <p>Generated on <span id="printDate"></span> by Tax Calculator 2025</p>
+            <p class="disclaimer">Disclaimer: This is an estimate only and not an official tax filing document.</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
