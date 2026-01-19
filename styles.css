@@ -159,6 +159,34 @@ body {
     border-color: var(--success);
 }
 
+/* Save Notification */
+.save-notification {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--bg-primary);
+    border-left: 4px solid var(--primary-green);
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xl);
+    z-index: 2000;
+    font-weight: 500;
+    color: var(--text-primary);
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+
 /* Landing Page */
 .landing-container {
     max-width: 1200px;

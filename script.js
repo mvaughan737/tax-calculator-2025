@@ -874,8 +874,79 @@ function handleLogin() {
     state.userName = firstName;
     state.userEmail = email;
 
+    // Check for saved data on the server
+    loadFromServer(email);
+
     document.getElementById('loginModal').classList.remove('active');
     showFormPage();
+}
+
+async function loadFromServer(email) {
+    try {
+        console.log(`📡 Fetching saved return for: ${email}`);
+        const response = await fetch(`/api/load/${encodeURIComponent(email)}`);
+        
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data) {
+                console.log('✅ Saved data found, rehydrating form...');
+                
+                // Update state
+                if (result.data.data) {
+                    state.data = result.data.data;
+                }
+                
+                // Rehydrate the form inputs from the loaded data
+                rehydrateForm(result.data.data);
+                
+                // Show a brief notification
+                const notification = document.createElement('div');
+                notification.className = 'save-notification';
+                notification.textContent = '🏠 Welcome back! Your previous progress has been restored.';
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 5000);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading data from server:', error);
+    }
+}
+
+function rehydrateForm(savedData) {
+    if (!savedData) return;
+
+    // Iterate through all input elements and checkboxes
+    document.querySelectorAll('input.input-field, select.county-select, input.checkbox-field, input[type="checkbox"]').forEach(el => {
+        const id = el.id;
+        if (!id || !savedData.hasOwnProperty(id)) return;
+
+        const val = savedData[id];
+
+        if (el.type === 'checkbox') {
+            el.checked = !!val;
+        } else {
+            el.value = val;
+        }
+        
+        // Trigger a change/input event to ensure calculations update
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    // Handle special cases not captured by standard iteration
+    if (savedData.taxType) state.taxType = savedData.taxType;
+    if (savedData.filingStatus) state.filingStatus = savedData.filingStatus;
+    if (savedData.formType) state.formType = savedData.formType;
+    if (savedData.userName) state.userName = savedData.userName;
+
+    // Force recalculations
+    updateLine1zTotal();
+    updateLine9Total();
+    updateLine11aAGI();
+    updateStandardDeduction();
+    updateAllTaxAndCredits();
+    updateAllPayments();
+    updateAllIndianaCalculations();
 }
 
 function isValidEmail(email) {
@@ -1013,7 +1084,12 @@ function resetToHome() {
     navigateToSection('income');
 }
 
-function navigateToSection(sectionName) {
+async function navigateToSection(sectionName) {
+    // Auto-save progress before moving
+    if (state.userEmail) {
+        saveToServer();
+    }
+
     state.currentSection = sectionName;
 
     // Update active section
@@ -1956,14 +2032,52 @@ function updateDeductionOptimizer() {
 
 function saveProgress() {
     localStorage.setItem('taxCalculatorState', JSON.stringify(state));
+    saveToServer(true); // pass true to show alert
+}
+
+async function saveToServer(showNotification = false) {
+    if (!state.userEmail) return;
+
+    try {
+        // Collect all form data directly from the DOM to ensure we capture everything
+        const formData = {};
+        document.querySelectorAll('input.input-field, select.county-select, input.checkbox-field, input[type="checkbox"]').forEach(el => {
+            if (el.id) {
+                formData[el.id] = el.type === 'checkbox' ? el.checked : el.value;
+            }
+        });
+
+        // Add core state info
+        formData.taxType = state.taxType;
+        formData.filingStatus = state.filingStatus;
+        formData.formType = state.formType;
+        formData.userName = state.userName;
+
+        const response = await fetch('/api/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: state.userEmail,
+                data: formData
+            })
+        });
+
+        if (response.ok && showNotification) {
+            console.log('✅ Progress saved to server');
+        }
+    } catch (error) {
+        console.error('Error saving data to server:', error);
+    }
 }
 
 function loadSavedProgress() {
+    // This is called on DOMDidLoad
     const saved = localStorage.getItem('taxCalculatorState');
     if (saved) {
-        const savedState = JSON.parse(saved);
-        // Optionally restore state here
-        console.log('Saved progress found:', savedState);
+        console.log('Local progress found');
+        // We'll let the email login handle the server-side loading
     }
 }
 
