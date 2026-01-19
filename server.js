@@ -1,56 +1,42 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { v4: uuidv4 } = require('uuid');
-const fs = require('fs');
+const mongoose = require('mongoose');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DATA_FILE = path.join(__dirname, 'data', 'saved-returns.json');
+const MONGODB_URI = process.env.MONGODB_URI;
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
 
-// Ensure data directory exists
-const dataDir = path.join(__dirname, 'data');
-if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir);
+// MongoDB Connection
+if (MONGODB_URI && MONGODB_URI !== 'placeholder') {
+    mongoose.connect(MONGODB_URI)
+        .then(() => console.log('✅ Connected to MongoDB Cloud Database'))
+        .catch(err => console.error('❌ MongoDB connection error:', err));
+} else {
+    console.warn('⚠️ No MONGODB_URI found. Database features will not work until configured.');
 }
 
-// Initialize data file if it doesn't exist
-if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2));
-}
+// Tax Return Schema
+const taxReturnSchema = new mongoose.Schema({
+    email: { type: String, required: true, unique: true },
+    data: { type: mongoose.Schema.Types.Mixed, required: true },
+    userName: String,
+    lastModified: { type: Date, default: Date.now }
+});
 
-// Helper function to read data
-function readData() {
-    try {
-        const data = fs.readFileSync(DATA_FILE, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error('Error reading data:', error);
-        return [];
-    }
-}
-
-// Helper function to write data
-function writeData(data) {
-    try {
-        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-        return true;
-    } catch (error) {
-        console.error('Error writing data:', error);
-        return false;
-    }
-}
+const TaxReturn = mongoose.model('TaxReturn', taxReturnSchema);
 
 // API Routes
 
-// Save new tax return
-app.post('/api/save', (req, res) => {
+// Save or Update tax return
+app.post('/api/save', async (req, res) => {
     try {
         const { email, data } = req.body;
 
@@ -58,27 +44,21 @@ app.post('/api/save', (req, res) => {
             return res.status(400).json({ error: 'Email and data are required' });
         }
 
-        const returns = readData();
-        const existingIndex = returns.findIndex(r => r.email === email);
+        const taxReturn = await TaxReturn.findOneAndUpdate(
+            { email },
+            {
+                data,
+                lastModified: new Date(),
+                userName: data.userName // Optional: capture name if provided in data
+            },
+            { upsert: true, new: true }
+        );
 
-        const taxReturn = {
-            id: existingIndex >= 0 ? returns[existingIndex].id : uuidv4(),
-            email,
-            data,
-            lastModified: new Date().toISOString()
-        };
-
-        if (existingIndex >= 0) {
-            returns[existingIndex] = taxReturn;
-        } else {
-            returns.push(taxReturn);
-        }
-
-        if (writeData(returns)) {
-            res.json({ success: true, id: taxReturn.id, message: 'Tax return saved successfully' });
-        } else {
-            res.status(500).json({ error: 'Failed to save data' });
-        }
+        res.json({
+            success: true,
+            id: taxReturn._id,
+            message: 'Tax return saved successfully to Cloud Database'
+        });
     } catch (error) {
         console.error('Save error:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -86,11 +66,10 @@ app.post('/api/save', (req, res) => {
 });
 
 // Load tax return by email
-app.get('/api/load/:email', (req, res) => {
+app.get('/api/load/:email', async (req, res) => {
     try {
         const { email } = req.params;
-        const returns = readData();
-        const taxReturn = returns.find(r => r.email === email);
+        const taxReturn = await TaxReturn.findOne({ email });
 
         if (taxReturn) {
             res.json({ success: true, data: taxReturn });
@@ -103,50 +82,14 @@ app.get('/api/load/:email', (req, res) => {
     }
 });
 
-// Update existing tax return
-app.put('/api/update/:id', (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data } = req.body;
-
-        if (!data) {
-            return res.status(400).json({ error: 'Data is required' });
-        }
-
-        const returns = readData();
-        const index = returns.findIndex(r => r.id === id);
-
-        if (index >= 0) {
-            returns[index].data = data;
-            returns[index].lastModified = new Date().toISOString();
-
-            if (writeData(returns)) {
-                res.json({ success: true, message: 'Tax return updated successfully' });
-            } else {
-                res.status(500).json({ error: 'Failed to update data' });
-            }
-        } else {
-            res.status(404).json({ error: 'Tax return not found' });
-        }
-    } catch (error) {
-        console.error('Update error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
 // Delete tax return
-app.delete('/api/delete/:id', (req, res) => {
+app.delete('/api/delete/:email', async (req, res) => {
     try {
-        const { id } = req.params;
-        const returns = readData();
-        const filteredReturns = returns.filter(r => r.id !== id);
+        const { email } = req.params;
+        const result = await TaxReturn.findOneAndDelete({ email });
 
-        if (filteredReturns.length < returns.length) {
-            if (writeData(filteredReturns)) {
-                res.json({ success: true, message: 'Tax return deleted successfully' });
-            } else {
-                res.status(500).json({ error: 'Failed to delete data' });
-            }
+        if (result) {
+            res.json({ success: true, message: 'Tax return deleted successfully' });
         } else {
             res.status(404).json({ error: 'Tax return not found' });
         }
@@ -158,13 +101,17 @@ app.delete('/api/delete/:id', (req, res) => {
 
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', message: 'Tax Calculator API is running' });
+    res.json({
+        status: 'ok',
+        database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+        message: 'Tax Calculator API is running'
+    });
 });
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`\n🚀 Tax Calculator 2025 Backend Server`);
+    console.log(`\n🚀 Tax Calculator 2025 Cloud-Ready Server`);
     console.log(`📡 Server running on http://localhost:${PORT}`);
-    console.log(`📁 Data stored in: ${DATA_FILE}`);
+    console.log(`☁️ Database: ${MONGODB_URI && MONGODB_URI !== 'placeholder' ? 'MongoDB Cloud' : 'Not Configured'}`);
     console.log(`\n✅ Ready to accept connections!\n`);
 });
