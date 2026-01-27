@@ -2563,10 +2563,28 @@ const emilyKnowledge = {
 
     "estimated taxes": "If you're self-employed or have income without withholding, you may need to pay estimated taxes quarterly. This prevents owing a large amount at year-end and avoids penalties. Estimated tax payments are due April 15, June 15, September 15, and January 15.",
 
+    // Interactive Forms & Tools
+    "schedule b": "Schedule B is used to report taxable interest and ordinary dividends when totals exceed IRS thresholds (usually $1,500) or when required for certain situations like foreign accounts or seller-financed mortgages. It summarizes interest and dividends from banks and investments and feeds those totals into Form 1040, Lines 2b and 3b.",
+
+    "schedule d": "Schedule D reports gains and losses from selling investments such as stocks, bonds, and real estate. It helps calculate the difference between short-term and long-term capital gains, allows losses to offset gains (up to certain limits), and the net result flows directly to Form 1040, Line 7.",
+
+    "schedule 3": "Schedule 3 reports additional tax credits and payments not listed directly on the first two pages of Form 1040. This includes non-refundable credits like the Foreign Tax Credit and education credits, as well as refundable payments that reduce your overall tax liability.",
+
+    "form 8949": "Form 8949 provides detailed, transaction-level reporting for asset sales including stocks, crypto, and property. It records the date acquired, date sold, proceeds, and cost basis for each trade. The totals from this form feed directly into Schedule D.",
+
+    "form 8995": "Form 8995 calculates the 20% Qualified Business Income (QBI) deduction for eligible self-employed individuals and small business owners. It accounts for income limitations and business types to reduce your overall taxable income on Form 1040, Line 13.",
+
+    "social security benefits worksheet": "The Social Security Benefits Worksheet determines how much of your benefits are taxable based on your total income and filing status. Since not all benefits are taxable, this worksheet calculates the specific portion that must be reported on Form 1040, Line 6b.",
+
+    "tax tables": "The 2025 Tax Tables help determine the amount of federal income tax you owe based on your taxable income and filing status. These tables are generally used when taxable income falls under $100,000, providing a simple way to look up your tax amount.",
+
+    "2025 instructions": "The official 2025 IRS instructions for Form 1040 and 1040-SR provide comprehensive, step-by-step guidance for completing your return. They include legal definitions, calculation worksheets, and detailed references for every credit, deduction, and schedule.",
+
     "help": "I'm Emily, your voice tax assistant! I can help you with questions about Form 1040, filing statuses, deductions, credits, Indiana state taxes, and general tax concepts. Just ask me anything! You can speak by clicking the microphone or type your question."
 };
 
 // Emily Voice Assistant State
+let emilyLastTopic = null;
 let emilyRecognition = null;
 let emilySynthesis = window.speechSynthesis;
 let emilyVoice = null;
@@ -2709,9 +2727,23 @@ function generateEmilyResponse(question) {
         return "You're welcome! Feel free to ask me anything else about your taxes.";
     }
 
+    // Handle Follow-up Questions based on last topic
+    if (emilyLastTopic) {
+        if (lowerQuestion.includes("do i need") || lowerQuestion.includes("should i file")) {
+            return getDoINeedResponse(emilyLastTopic);
+        }
+        if (lowerQuestion.includes("where does this show up") || lowerQuestion.includes("on my 1040")) {
+            return getWhereDoesItShowUpResponse(emilyLastTopic);
+        }
+        if (lowerQuestion.includes("what happens if i don't") || lowerQuestion.includes("don't file it")) {
+            return getPenaltyResponse(emilyLastTopic);
+        }
+    }
+
     // Search knowledge base with improved matching
     let bestMatch = null;
     let bestScore = 0;
+    let matchedTopic = null;
 
     for (const [topic, answer] of Object.entries(emilyKnowledge)) {
         // Calculate match score based on keyword overlap
@@ -2744,7 +2776,7 @@ function generateEmilyResponse(question) {
         }
 
         // Specific Keyword Priority: Tips, Overtime, Trump
-        const priorities = ['tips', 'overtime', 'trump', 'changes', 'new'];
+        const priorities = ['tips', 'overtime', 'trump', 'changes', 'new', 'schedule', 'form', 'worksheet'];
         for (const p of priorities) {
             if (lowerQuestion.includes(p) && topic.toLowerCase().includes(p)) {
                 score += 30;
@@ -2754,11 +2786,13 @@ function generateEmilyResponse(question) {
         if (score > bestScore) {
             bestScore = score;
             bestMatch = answer;
+            matchedTopic = topic;
         }
     }
 
     // Return best match if score is high enough
     if (bestScore >= 20) {
+        emilyLastTopic = matchedTopic; // Remember the topic for follow-ups
         return bestMatch;
     }
 
@@ -2779,6 +2813,52 @@ function generateEmilyResponse(question) {
 
     // Default response with suggestions
     return "I'm not sure about that specific question, but I can help you with topics like filing statuses, deductions, credits, tax brackets, Indiana state taxes, and Form 1040 line items. What would you like to know?";
+}
+
+// Helper functions for tailored follow-up responses
+function getDoINeedResponse(topic) {
+    const filingStatus = state.filingStatus || 'single';
+    const statusText = filingStatus.replace(/-/g, ' ');
+    const hasInvestmentIncome = (parseFloat(document.getElementById('line2b')?.value) || 0) > 0 || (parseFloat(document.getElementById('line3b')?.value) || 0) > 0;
+    const hasCapitalGains = (parseFloat(document.getElementById('line7')?.value) || 0) !== 0;
+    const hasSS = (parseFloat(document.getElementById('line6a')?.value) || 0) > 0;
+    const hasBusinessIncome = (parseFloat(document.getElementById('line8')?.value) || 0) > 0 || (parseFloat(document.getElementById('line13a')?.value) || 0) > 0;
+
+    switch (topic) {
+        case "schedule b":
+            if (hasInvestmentIncome) return `Since you have reported interest or dividends, you likely need Schedule B if they total over $1,500. It's the official way to list your payers for a ${statusText} return.`;
+            return `You'll need Schedule B if your interest and dividends exceed $1,500 this year. If you don't have investments, you usually won't need it.`;
+        case "schedule d":
+        case "form 8949":
+            if (hasCapitalGains) return `Yes, because you have capital gains or losses on Line 7, you'll need Form 8949 and Schedule D to provide the transaction details the IRS requires.`;
+            return `You'll need these if you sold assets like stocks, bonds, or crypto. For a ${statusText} filer, it's how you report your investment profit or loss.`;
+        case "form 8995":
+            if (hasBusinessIncome) return `Based on your self-employment income, you likely qualify for the 20% QBI deduction! Form 8995 calculates this and helps reduce your taxable income.`;
+            return `This form is specifically for self-employed individuals and small business owners to claim a 20% deduction on their qualified business income.`;
+        case "social security benefits worksheet":
+            if (hasSS) return `Since you receive Social Security, this worksheet is required to determine if any of your benefits are taxable for your ${statusText} filing.`;
+            return `You only need this if you receive Social Security benefits. It helps calculate the taxable amount that goes on Line 6b.`;
+        case "schedule 3":
+            return `You'll need Schedule 3 if you have additional credits (like education or foreign tax credits) or other payments not shown directly on the main Form 1040.`;
+        default:
+            return `It depends on your specific financial situaton. Generally, if you have income or expenses related to that form, you'll need to file it. I recommend checking the 2025 instructions for further clarity.`;
+    }
+}
+
+function getWhereDoesItShowUpResponse(topic) {
+    switch (topic) {
+        case "schedule b": return "The totals from Schedule B flow directly into Form 1040, Lines 2b (Taxable Interest) and 3b (Ordinary Dividends).";
+        case "schedule d": return "The net capital gain or loss from Schedule D is reported on Form 1040, Line 7.";
+        case "schedule 3": return "Schedule 3 totals are summarized on Form 1040, Line 20 (for credits) and Line 31 (for other payments).";
+        case "form 8949": return "Form 8949 provides the detail for Schedule D. Its totals flow into Schedule D, which then flows to Form 1040, Line 7.";
+        case "form 8995": return "The Qualified Business Income deduction from Form 8995 is reported on Form 1040, Line 13.";
+        case "social security benefits worksheet": return "The final taxable amount from the worksheet is reported on Form 1040, Line 6b.";
+        default: return "Most supplemental forms feed into specific lines on the main Form 1040. You can usually find the 'Transfer to Line X' instruction on the bottom of the form.";
+    }
+}
+
+function getPenaltyResponse(topic) {
+    return "Filing all required schedules is essential for an accurate return. If you omit a required form, the IRS may delay your refund, send you a notice, or assess penalties and interest on any unpaid taxes. It's always best to be thorough and accurate!";
 }
 
 function addUserMessage(message) {
