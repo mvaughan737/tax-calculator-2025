@@ -606,14 +606,7 @@ function initializeEventListeners() {
         });
     }
 
-    // Back from Other Forms
-    const backFromOtherBtn = document.getElementById('backToTaxTypeFromOther');
-    if (backFromOtherBtn) {
-        backFromOtherBtn.addEventListener('click', () => {
-            document.getElementById('otherFormsSelection').style.display = 'none';
-            document.querySelector('.tax-type-selection').style.display = 'block';
-        });
-    }
+    // Back from Other Forms (Now handled by <a> tag in index.html)
 
     // Filing Status Selection
     document.querySelectorAll('.filing-status-card').forEach(card => {

@@ -12,7 +12,7 @@ const MONGODB_URI = process.env.MONGODB_URI;
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // MongoDB Connection
 if (MONGODB_URI && MONGODB_URI !== 'placeholder') {
