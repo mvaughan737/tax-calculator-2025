@@ -345,12 +345,275 @@ function initializeEventListeners() {
             if (taxType === 'indiana') {
                 // For Indiana only, show county selection first
                 document.getElementById('countySelection').style.display = 'block';
+            } else if (taxType === 'other-forms') {
+                // For Other Forms, show the forms selection grid
+                document.getElementById('otherFormsSelection').style.display = 'block';
             } else {
                 // For federal or combined, show filing status selection
                 document.getElementById('filingStatusSelection').style.display = 'block';
             }
         });
     });
+
+    // Other Forms Selection Event Listeners
+    document.querySelectorAll('.other-form-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            const formType = e.currentTarget.dataset.form;
+            const url = e.currentTarget.dataset.url;
+
+            if (formType === 'ss-worksheet') {
+                // Show interactive worksheet instead of PDF
+                document.getElementById('otherFormsSelection').style.display = 'none';
+                document.getElementById('ssWorksheetSelection').style.display = 'block';
+                if (typeof initializeSSWorksheet === 'function') {
+                    initializeSSWorksheet();
+                }
+            } else if (formType === 'sch-b') {
+                // Show interactive Schedule B
+                document.getElementById('otherFormsSelection').style.display = 'none';
+                document.getElementById('schBSelection').style.display = 'block';
+                initializeSchB();
+            } else if (formType === 'sch-d' || formType === 'f8949') {
+                // Show interactive Schedule D / Form 8949
+                document.getElementById('otherFormsSelection').style.display = 'none';
+                document.getElementById('schDSelection').style.display = 'block';
+                initializeSchD();
+            } else if (formType === 'sch-3') {
+                // Show interactive Schedule 3
+                document.getElementById('otherFormsSelection').style.display = 'none';
+                document.getElementById('sch3Selection').style.display = 'block';
+                // No specific init needed other than clear fields if desired, 
+                // but we'll just let the listeners handle it
+            } else if (formType === 'f8995') {
+                // Show interactive Form 8995
+                document.getElementById('otherFormsSelection').style.display = 'none';
+                document.getElementById('f8995Selection').style.display = 'block';
+                initializeF8995();
+            } else if (url) {
+                window.open(url, '_blank');
+            } else {
+                alert(`You selected: ${formType}. This form will be available once you upload the documents.`);
+            }
+        });
+    });
+
+    // Form 8995 Event Listeners
+    const addQBIBtn = document.getElementById('addQBIRow');
+    if (addQBIBtn) {
+        addQBIBtn.addEventListener('click', () => addQBIRow());
+    }
+
+    const backFromF8995Btn = document.getElementById('backToOtherFormsFromF8995');
+    if (backFromF8995Btn) {
+        backFromF8995Btn.addEventListener('click', () => {
+            document.getElementById('f8995Selection').style.display = 'none';
+            document.getElementById('otherFormsSelection').style.display = 'block';
+        });
+    }
+
+    const update1040FromF8995Btn = document.getElementById('update1040FromF8995');
+    if (update1040FromF8995Btn) {
+        update1040FromF8995Btn.addEventListener('click', () => {
+            const deduction = parseFloat(document.getElementById('f8995Line15').value) || 0;
+
+            document.getElementById('line13').value = deduction.toFixed(2);
+
+            // Trigger main calculation
+            if (typeof calculateTaxes === 'function') {
+                calculateTaxes();
+            }
+
+            alert('Form 1040 Line 13 has been updated with your QBI deduction!');
+
+            // Navigate to income section
+            document.getElementById('f8995Selection').style.display = 'none';
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('formPage').style.display = 'block';
+            if (typeof navigateToSection === 'function') {
+                navigateToSection('income');
+            }
+        });
+    }
+
+    const f8995Inputs = document.querySelectorAll('.f8995-calc-input');
+    f8995Inputs.forEach(input => {
+        input.addEventListener('input', calculateF8995);
+    });
+
+    // Schedule 3 Event Listeners
+    document.querySelectorAll('.sch3-line').forEach(input => {
+        input.addEventListener('input', calculateSch3);
+    });
+
+    const backFromSch3Btn = document.getElementById('backToOtherFormsFromSch3');
+    if (backFromSch3Btn) {
+        backFromSch3Btn.addEventListener('click', () => {
+            document.getElementById('sch3Selection').style.display = 'none';
+            document.getElementById('otherFormsSelection').style.display = 'block';
+        });
+    }
+
+    const update1040FromSch3Btn = document.getElementById('update1040FromSch3');
+    if (update1040FromSch3Btn) {
+        update1040FromSch3Btn.addEventListener('click', () => {
+            const p1 = parseFloat(document.getElementById('sch3TotalPart1').value) || 0;
+            const p2 = parseFloat(document.getElementById('sch3TotalPart2').value) || 0;
+
+            document.getElementById('line20').value = p1.toFixed(2);
+            document.getElementById('line31').value = p2.toFixed(2);
+
+            // Trigger main calculation
+            if (typeof calculateTaxes === 'function') {
+                calculateTaxes();
+            }
+
+            alert('Form 1040 Line 20 and 31 have been updated with your Schedule 3 totals!');
+
+            // Navigate to appropriate section
+            document.getElementById('sch3Selection').style.display = 'none';
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('formPage').style.display = 'block';
+            if (typeof navigateToSection === 'function') {
+                navigateToSection('payments'); // Sync with Form 1040 Payments section
+            }
+        });
+    }
+
+    // Schedule D Event Listeners
+    const addAssetBtn = document.getElementById('addAssetRow');
+    if (addAssetBtn) {
+        addAssetBtn.addEventListener('click', () => addAssetRow());
+    }
+
+    const backFromSchDBtn = document.getElementById('backToOtherFormsFromSchD');
+    if (backFromSchDBtn) {
+        backFromSchDBtn.addEventListener('click', () => {
+            document.getElementById('schDSelection').style.display = 'none';
+            document.getElementById('otherFormsSelection').style.display = 'block';
+        });
+    }
+
+    const update1040FromSchDBtn = document.getElementById('update1040FromSchD');
+    if (update1040FromSchDBtn) {
+        update1040FromSchDBtn.addEventListener('click', () => {
+            const netCapital = calculateSchDTotal();
+
+            document.getElementById('line7').value = netCapital.toFixed(2);
+
+            // Trigger main calculation
+            if (typeof calculateTaxes === 'function') {
+                calculateTaxes();
+            }
+
+            alert('Form 1040 Line 7 has been updated with your Schedule D total!');
+
+            // Navigate to income section to show results
+            document.getElementById('schDSelection').style.display = 'none';
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('formPage').style.display = 'block';
+            if (typeof navigateToSection === 'function') {
+                navigateToSection('income');
+            }
+        });
+    }
+
+    // Schedule B Event Listeners
+    const addInterestBtn = document.getElementById('addInterestRow');
+    if (addInterestBtn) {
+        addInterestBtn.addEventListener('click', () => addSchBRow('interestTable'));
+    }
+
+    const addDividendBtn = document.getElementById('addDividendRow');
+    if (addDividendBtn) {
+        addDividendBtn.addEventListener('click', () => addSchBRow('dividendTable'));
+    }
+
+    const backFromSchBBtn = document.getElementById('backToOtherFormsFromSchB');
+    if (backFromSchBBtn) {
+        backFromSchBBtn.addEventListener('click', () => {
+            document.getElementById('schBSelection').style.display = 'none';
+            document.getElementById('otherFormsSelection').style.display = 'block';
+        });
+    }
+
+    const update1040FromSchBBtn = document.getElementById('update1040FromSchB');
+    if (update1040FromSchBBtn) {
+        update1040FromSchBBtn.addEventListener('click', () => {
+            const interest = calculateSchBTotal('interestTable');
+            const dividends = calculateSchBTotal('dividendTable');
+
+            document.getElementById('line2b').value = interest.toFixed(2);
+            document.getElementById('line3b').value = dividends.toFixed(2);
+
+            // Trigger main calculation
+            if (typeof calculateTaxes === 'function') {
+                calculateTaxes();
+            }
+
+            alert('Form 1040 Line 2b and 3b have been updated with your Schedule B totals!');
+
+            // Navigate to income section to show results
+            document.getElementById('schBSelection').style.display = 'none';
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('formPage').style.display = 'block';
+            if (typeof navigateToSection === 'function') {
+                navigateToSection('income');
+            }
+        });
+    }
+
+    // SS Worksheet Calculation Listeners
+    for (let i = 1; i <= 18; i++) {
+        const input = document.getElementById(`ssStep${i}`);
+        if (input && !input.readOnly) {
+            input.addEventListener('input', calculateSSWorksheet);
+        }
+    }
+
+    // SS Worksheet Navigation
+    const backFromSSBtn = document.getElementById('backToOtherForms');
+    if (backFromSSBtn) {
+        backFromSSBtn.addEventListener('click', () => {
+            document.getElementById('ssWorksheetSelection').style.display = 'none';
+            document.getElementById('otherFormsSelection').style.display = 'block';
+        });
+    }
+
+    // Push Results to 1040
+    const update1040Btn = document.getElementById('update1040FromSS');
+    if (update1040Btn) {
+        update1040Btn.addEventListener('click', () => {
+            const ss6a = parseFloat(document.getElementById('ssStep1').value) || 0;
+            const ss6b = parseFloat(document.getElementById('ssStep18').value) || 0;
+
+            document.getElementById('line6a').value = ss6a.toFixed(2);
+            document.getElementById('line6b').value = ss6b.toFixed(2);
+
+            // Trigger main calculation
+            if (typeof calculateTaxes === 'function') {
+                calculateTaxes();
+            }
+
+            alert('Form 1040 Line 6a and 6b have been updated with your worksheet results!');
+
+            // Navigate to income section to show results
+            document.getElementById('ssWorksheetSelection').style.display = 'none';
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('formPage').style.display = 'block';
+            if (typeof navigateToSection === 'function') {
+                navigateToSection('income');
+            }
+        });
+    }
+
+    // Back from Other Forms
+    const backFromOtherBtn = document.getElementById('backToTaxTypeFromOther');
+    if (backFromOtherBtn) {
+        backFromOtherBtn.addEventListener('click', () => {
+            document.getElementById('otherFormsSelection').style.display = 'none';
+            document.querySelector('.tax-type-selection').style.display = 'block';
+        });
+    }
 
     // Filing Status Selection
     document.querySelectorAll('.filing-status-card').forEach(card => {
@@ -885,20 +1148,20 @@ async function loadFromServer(email) {
     try {
         console.log(`📡 Fetching saved return for: ${email}`);
         const response = await fetch(`/api/load/${encodeURIComponent(email)}`);
-        
+
         if (response.ok) {
             const result = await response.json();
             if (result.success && result.data) {
                 console.log('✅ Saved data found, rehydrating form...');
-                
+
                 // Update state
                 if (result.data.data) {
                     state.data = result.data.data;
                 }
-                
+
                 // Rehydrate the form inputs from the loaded data
                 rehydrateForm(result.data.data);
-                
+
                 // Show a brief notification
                 const notification = document.createElement('div');
                 notification.className = 'save-notification';
@@ -927,7 +1190,7 @@ function rehydrateForm(savedData) {
         } else {
             el.value = val;
         }
-        
+
         // Trigger a change/input event to ensure calculations update
         el.dispatchEvent(new Event('input', { bubbles: true }));
         el.dispatchEvent(new Event('change', { bubbles: true }));
@@ -2584,3 +2847,331 @@ function speakResponse(text) {
 document.addEventListener('DOMContentLoaded', () => {
     initializeEmily();
 });
+
+function initializeSSWorksheet() {
+    // Pre-fill Step 8 and 10 based on state.filingStatus
+    const step8 = document.getElementById('ssStep8');
+    const step10 = document.getElementById('ssStep10');
+
+    if (state.filingStatus === 'married') {
+        step8.value = 32000;
+        step10.value = 12000;
+    } else {
+        step8.value = 25000;
+        step10.value = 9000;
+    }
+
+    // Pre-fill Step 1 from current Line 6a if it has a value
+    const line6aField = document.getElementById('line6a');
+    if (line6aField && line6aField.value > 0) {
+        document.getElementById('ssStep1').value = line6aField.value;
+    }
+
+    calculateSSWorksheet();
+}
+
+function calculateSSWorksheet() {
+    const getVal = (id) => parseFloat(document.getElementById(id).value) || 0;
+    const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = Math.max(0, val).toFixed(2);
+    };
+
+    const s1 = getVal('ssStep1');
+    const s2 = s1 * 0.5;
+    setVal('ssStep2', s2);
+
+    const s3 = getVal('ssStep3');
+    const s4 = getVal('ssStep4');
+    const s5 = s2 + s3 + s4;
+    setVal('ssStep5', s5);
+
+    const s6 = getVal('ssStep6');
+    const s7 = s5 - s6;
+    setVal('ssStep7', s7);
+
+    const s8 = getVal('ssStep8');
+
+    if (s6 >= s5) {
+        // Step 7 No
+        setVal('ssStep9', 0);
+        setVal('ssStep18', 0);
+        return;
+    }
+
+    const s9 = s7 - s8;
+    setVal('ssStep9', s9);
+
+    if (s8 >= s7) {
+        // Step 9 No
+        setVal('ssStep11', 0);
+        setVal('ssStep18', 0);
+        return;
+    }
+
+    const s10 = getVal('ssStep10');
+    const s11 = s9 - s10;
+    setVal('ssStep11', s11);
+
+    const s12 = Math.min(s9, s10);
+    setVal('ssStep12', s12);
+
+    const s13 = s12 * 0.5;
+    setVal('ssStep13', s13);
+
+    const s14 = Math.min(s2, s13);
+    setVal('ssStep14', s14);
+
+    const s15 = s11 * 0.85;
+    setVal('ssStep15', s15);
+
+    const s16 = s14 + s15;
+    setVal('ssStep16', s16);
+
+    const s17 = s1 * 0.85;
+    setVal('ssStep17', s17);
+
+    const s18 = Math.min(s16, s17);
+    setVal('ssStep18', s18);
+}
+
+function initializeSchB() {
+    const interestTable = document.querySelector('#interestTable tbody');
+    const dividendTable = document.querySelector('#dividendTable tbody');
+
+    // Add one initial row to each if empty
+    if (interestTable.children.length === 0) addSchBRow('interestTable');
+    if (dividendTable.children.length === 0) addSchBRow('dividendTable');
+}
+
+function addSchBRow(tableId) {
+    const tbody = document.querySelector(`#${tableId} tbody`);
+    const row = document.createElement('tr');
+
+    row.innerHTML = `
+        <td class="row-payer"><input type="text" class="sch-b-input payer-name" placeholder="Payer Name"></td>
+        <td class="row-amount"><input type="number" class="sch-b-input payer-amount" placeholder="0.00" step="0.01"></td>
+        <td><button class="btn-remove" title="Remove">&times;</button></td>
+    `;
+
+    // Listen for removal
+    row.querySelector('.btn-remove').addEventListener('click', () => {
+        row.remove();
+        calculateSchB();
+    });
+
+    // Listen for value changes
+    row.querySelector('.payer-amount').addEventListener('input', calculateSchB);
+
+    tbody.appendChild(row);
+}
+
+function calculateSchB() {
+    const interest = calculateSchBTotal('interestTable');
+    const dividends = calculateSchBTotal('dividendTable');
+
+    const intTotalEl = document.getElementById('schBTotalInterest');
+    const divTotalEl = document.getElementById('schBTotalDividends');
+
+    if (intTotalEl) intTotalEl.textContent = formatCurrency(interest);
+    if (divTotalEl) divTotalEl.textContent = formatCurrency(dividends);
+}
+
+function calculateSchBTotal(tableId) {
+    let total = 0;
+    const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+    rows.forEach(row => {
+        const val = parseFloat(row.querySelector('.payer-amount').value) || 0;
+        total += val;
+    });
+    return total;
+}
+
+// Helper to format currency if not global
+if (typeof formatCurrency !== 'function') {
+    window.formatCurrency = (val) => `$${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function initializeSchD() {
+    const assetTable = document.querySelector('#assetTable tbody');
+    if (assetTable.children.length === 0) addAssetRow();
+}
+
+function addAssetRow() {
+    const tbody = document.querySelector('#assetTable tbody');
+    const row = document.createElement('tr');
+
+    row.innerHTML = `
+        <td><input type="text" class="sch-d-input-text asset-desc" placeholder="e.g. 100 shares XYZ"></td>
+        <td><input type="date" class="sch-d-input-text asset-acquired"></td>
+        <td><input type="date" class="sch-d-input-text asset-sold"></td>
+        <td><input type="number" class="sch-d-input-text asset-proceeds" placeholder="0.00" step="0.01"></td>
+        <td><input type="number" class="sch-d-input-text asset-cost" placeholder="0.00" step="0.01"></td>
+        <td><span class="asset-gain-loss">$0.00</span></td>
+        <td><span class="term-badge term-st">ST</span></td>
+        <td><button class="btn-remove" title="Remove">&times;</button></td>
+    `;
+
+    // Listen for removal
+    row.querySelector('.btn-remove').addEventListener('click', () => {
+        row.remove();
+        calculateSchD();
+    });
+
+    // Listen for value changes
+    row.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', calculateSchD);
+    });
+
+    tbody.appendChild(row);
+}
+
+function calculateSchD() {
+    let stTotal = 0;
+    let ltTotal = 0;
+
+    const rows = document.querySelectorAll('#assetTable tbody tr');
+    rows.forEach(row => {
+        const proceeds = parseFloat(row.querySelector('.asset-proceeds').value) || 0;
+        const cost = parseFloat(row.querySelector('.asset-cost').value) || 0;
+        const gainLoss = proceeds - cost;
+
+        row.querySelector('.asset-gain-loss').textContent = formatCurrency(gainLoss);
+        row.querySelector('.asset-gain-loss').className = 'asset-gain-loss ' + (gainLoss >= 0 ? 'gain' : 'loss');
+
+        const dateAcquired = row.querySelector('.asset-acquired').value;
+        const dateSold = row.querySelector('.asset-sold').value;
+
+        let isLongTerm = false;
+        if (dateAcquired && dateSold) {
+            const acq = new Date(dateAcquired);
+            const sold = new Date(dateSold);
+            const oneYearLater = new Date(acq);
+            oneYearLater.setFullYear(acq.getFullYear() + 1);
+
+            if (sold > oneYearLater) {
+                isLongTerm = true;
+            }
+        }
+
+        const termBadge = row.querySelector('.term-badge');
+        termBadge.textContent = isLongTerm ? 'LT' : 'ST';
+        termBadge.className = 'term-badge ' + (isLongTerm ? 'term-lt' : 'term-st');
+
+        if (isLongTerm) {
+            ltTotal += gainLoss;
+        } else {
+            stTotal += gainLoss;
+        }
+    });
+
+    document.getElementById('stTotal').textContent = formatCurrency(stTotal);
+    document.getElementById('ltTotal').textContent = formatCurrency(ltTotal);
+
+    const netTotal = stTotal + ltTotal;
+    const netEl = document.getElementById('netCapitalTotal');
+    netEl.textContent = formatCurrency(netTotal);
+    netEl.className = 'gain ' + (netTotal >= 0 ? 'gain' : 'loss');
+}
+
+function calculateSchDTotal() {
+    let stTotal = 0;
+    let ltTotal = 0;
+    const rows = document.querySelectorAll('#assetTable tbody tr');
+    rows.forEach(row => {
+        const proceeds = parseFloat(row.querySelector('.asset-proceeds').value) || 0;
+        const cost = parseFloat(row.querySelector('.asset-cost').value) || 0;
+        const gainLoss = proceeds - cost;
+
+        const dateAcquired = row.querySelector('.asset-acquired').value;
+        const dateSold = row.querySelector('.asset-sold').value;
+
+        let isLongTerm = false;
+        if (dateAcquired && dateSold) {
+            const acq = new Date(dateAcquired);
+            const sold = new Date(dateSold);
+            const oneYearLater = new Date(acq);
+            oneYearLater.setFullYear(acq.getFullYear() + 1);
+            if (sold > oneYearLater) isLongTerm = true;
+        }
+
+        if (isLongTerm) ltTotal += gainLoss;
+        else stTotal += gainLoss;
+    });
+    return stTotal + ltTotal;
+}
+
+function calculateSch3() {
+    // Total Part I
+    let part1Total = 0;
+    for (let i = 1; i <= 5; i++) {
+        part1Total += parseFloat(document.getElementById(`sch3Line${i}`).value) || 0;
+    }
+    const p1El = document.getElementById('sch3TotalPart1');
+    if (p1El) p1El.value = part1Total.toFixed(2);
+
+    // Total Part II
+    let part2Total = 0;
+    part2Total += parseFloat(document.getElementById('sch3Line9').value) || 0;
+    part2Total += parseFloat(document.getElementById('sch3Line10').value) || 0;
+    const p2El = document.getElementById('sch3TotalPart2');
+    if (p2El) p2El.value = part2Total.toFixed(2);
+}
+
+function initializeF8995() {
+    const qbiTable = document.querySelector('#qbiTable tbody');
+    if (qbiTable.children.length === 0) addQBIRow();
+    calculateF8995();
+}
+
+function addQBIRow() {
+    const tbody = document.querySelector('#qbiTable tbody');
+    const row = document.createElement('tr');
+
+    row.innerHTML = `
+        <td><input type="text" class="sch-b-input qbi-name" placeholder="Business Name"></td>
+        <td><input type="number" class="sch-b-input qbi-income" placeholder="0.00" step="0.01"></td>
+        <td><button class="btn-remove" title="Remove">&times;</button></td>
+    `;
+
+    row.querySelector('.btn-remove').addEventListener('click', () => {
+        row.remove();
+        calculateF8995();
+    });
+
+    row.querySelector('.qbi-income').addEventListener('input', calculateF8995);
+
+    tbody.appendChild(row);
+}
+
+function calculateF8995() {
+    let totalQBI = 0;
+    const rows = document.querySelectorAll('#qbiTable tbody tr');
+    rows.forEach(row => {
+        totalQBI += parseFloat(row.querySelector('.qbi-income').value) || 0;
+    });
+
+    const line2El = document.getElementById('f8995Line2');
+    if (line2El) line2El.value = totalQBI.toFixed(2);
+
+    const reit = parseFloat(document.getElementById('f8995Line3').value) || 0;
+
+    // Line 6 is 20% of (QBI + REIT/PTP)
+    const line6 = Math.max(0, (totalQBI + reit) * 0.20);
+    const line6El = document.getElementById('f8995Line6');
+    if (line6El) line6El.value = line6.toFixed(2);
+
+    // Taxable Income Limitation (Line 11)
+    // We get the current taxable income from the main form (Line 15) minus capital gains
+    const taxableIncomeVal = parseFloat(document.getElementById('line15')?.value) || 0;
+    const capitalGainsVal = parseFloat(document.getElementById('line7')?.value) || 0;
+
+    const line11 = Math.max(0, (taxableIncomeVal - capitalGainsVal) * 0.20);
+    const line11El = document.getElementById('f8995Line11');
+    if (line11El) line11El.value = line11.toFixed(2);
+
+    // Final Deduction (Lesser of 6 or 11)
+    const finalDeduction = Math.min(line6, line11);
+    const line15El = document.getElementById('f8995Line15');
+    if (line15El) line15El.value = finalDeduction.toFixed(2);
+}

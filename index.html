@@ -80,7 +80,11 @@
 
                 <div class="tax-type-cards">
                     <button class="tax-type-card featured" data-tax-type="federal-1040">
-                        <div class="tax-type-icon">🇺🇸</div>
+                        <div class="tax-type-icon">
+                            <img src="us-flag-map.png" alt="USA Flag Map"
+                                style="height: 62px; width: auto; display: block; margin: 0 auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
+                        </div>
+
                         <h3>Federal Tax Only</h3>
                         <p>IRS Form 1040</p>
                         <span class="tax-type-badge">Recommended</span>
@@ -105,6 +109,13 @@
                         <h3>Federal & Indiana</h3>
                         <p>Complete Tax Picture</p>
                         <span class="tax-type-badge">Most Complete</span>
+                    </button>
+
+                    <button class="tax-type-card" data-tax-type="other-forms">
+                        <div class="tax-type-icon">📂</div>
+                        <h3>Other Forms</h3>
+                        <p>Schedules & Instructions</p>
+                        <span class="tax-type-badge">Reference</span>
                     </button>
                 </div>
             </div>
@@ -146,7 +157,569 @@
                     </button>
                 </div>
 
-                <button id="backToTaxType" class="btn-text">← Back to Tax Type Selection</button>
+                <button id="backToTaxTypeFromOther" class="btn-text">← Back to Tax Type Selection</button>
+            </div>
+
+            <!-- Social Security Benefits Worksheet (Interactive) -->
+            <div id="ssWorksheetSelection" class="ss-worksheet-selection" style="display: none;">
+                <div class="worksheet-header">
+                    <h2>Social Security Benefits Worksheet</h2>
+                    <p class="selection-subtitle">IRS Lines 6a and 6b - Keep for Your Records</p>
+                </div>
+
+                <div class="worksheet-layout">
+                    <div class="worksheet-column">
+                        <!-- Step 1-9 -->
+                        <div class="ws-row">
+                            <span class="ws-step">1</span>
+                            <div class="ws-label">Total amount from box 5 of all your Forms SSA-1099 and RRB-1099</div>
+                            <input type="number" id="ssStep1" class="ws-input" placeholder="0.00">
+                        </div>
+                        <div class="ws-row ws-calc">
+                            <span class="ws-step">2</span>
+                            <div class="ws-label">Multiply line 1 by 50% (0.50)</div>
+                            <input type="number" id="ssStep2" class="ws-input" readonly placeholder="0.00">
+                        </div>
+                        <div class="ws-row">
+                            <span class="ws-step">3</span>
+                            <div class="ws-label">Combine Form 1040 lines 1z, 2b, 3b, 4b, 5b, 7, and 8</div>
+                            <input type="number" id="ssStep3" class="ws-input" placeholder="0.00">
+                        </div>
+                        <div class="ws-row">
+                            <span class="ws-step">4</span>
+                            <div class="ws-label">Enter the amount, if any, from Form 1040, line 2a</div>
+                            <input type="number" id="ssStep4" class="ws-input" placeholder="0.00">
+                        </div>
+                        <div class="ws-row ws-calc">
+                            <span class="ws-step">5</span>
+                            <div class="ws-label">Combine lines 2, 3, and 4</div>
+                            <input type="number" id="ssStep5" class="ws-input" readonly placeholder="0.00">
+                        </div>
+                        <div class="ws-row">
+                            <span class="ws-step">6</span>
+                            <div class="ws-label">Total from Schedule 1, lines 11 through 20, 23, and 25</div>
+                            <input type="number" id="ssStep6" class="ws-input" placeholder="0.00">
+                        </div>
+                        <div class="ws-row ws-calc">
+                            <span class="ws-step">7</span>
+                            <div class="ws-label">Is line 6 less than line 5? (If No, none is taxable)</div>
+                            <input type="number" id="ssStep7" class="ws-input" readonly placeholder="0.00">
+                        </div>
+                        <div class="ws-row">
+                            <span class="ws-step">8</span>
+                            <div class="ws-label">Base Amount (based on filing status)</div>
+                            <input type="number" id="ssStep8" class="ws-input" value="25000">
+                        </div>
+                        <div class="ws-row ws-calc">
+                            <span class="ws-step">9</span>
+                            <div class="ws-label">Is line 8 less than line 7? (If No, none is taxable)</div>
+                            <input type="number" id="ssStep9" class="ws-input" readonly placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <div class="worksheet-column">
+                        <!-- Step 10-18 -->
+                        <div class="ws-row">
+                            <span class="ws-step">10</span>
+                            <div class="ws-label">Enter $12,000 (Joint) or $9,000 (Others)</div>
+                            <input type="number" id="ssStep10" class="ws-input" value="9000">
+                        </div>
+                        <div class="ws-row ws-calc">
+                            <span class="ws-step">11</span>
+                            <div class="ws-label">Subtract line 10 from line 9 (Zero if less)</div>
+                            <input type="number" id="ssStep11" class="ws-input" readonly placeholder="0.00">
+                        </div>
+                        <div class="ws-row ws-calc">
+                            <span class="ws-step">12</span>
+                            <div class="ws-label">Enter the smaller of line 9 or line 10</div>
+                            <input type="number" id="ssStep12" class="ws-input" readonly placeholder="0.00">
+                        </div>
+                        <div class="ws-row ws-calc">
+                            <span class="ws-step">13</span>
+                            <div class="ws-label">Enter one-half of line 12</div>
+                            <input type="number" id="ssStep13" class="ws-input" readonly placeholder="0.00">
+                        </div>
+                        <div class="ws-row ws-calc">
+                            <span class="ws-step">14</span>
+                            <div class="ws-label">Enter the smaller of line 2 or line 13</div>
+                            <input type="number" id="ssStep14" class="ws-input" readonly placeholder="0.00">
+                        </div>
+                        <div class="ws-row ws-calc">
+                            <span class="ws-step">15</span>
+                            <div class="ws-label">Multiply line 11 by 85% (0.85)</div>
+                            <input type="number" id="ssStep15" class="ws-input" readonly placeholder="0.00">
+                        </div>
+                        <div class="ws-row ws-calc">
+                            <span class="ws-step">16</span>
+                            <div class="ws-label">Add lines 14 and 15</div>
+                            <input type="number" id="ssStep16" class="ws-input" readonly placeholder="0.00">
+                        </div>
+                        <div class="ws-row ws-calc">
+                            <span class="ws-step">17</span>
+                            <div class="ws-label">Multiply line 1 by 85% (0.85)</div>
+                            <input type="number" id="ssStep17" class="ws-input" readonly placeholder="0.00">
+                        </div>
+                        <div class="ws-row ws-highlight">
+                            <span class="ws-step highlight">18</span>
+                            <div class="ws-label"><strong>Taxable social security benefits</strong> (Smaller of 16 or
+                                17)</div>
+                            <input type="number" id="ssStep18" class="ws-input highlight" readonly placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="worksheet-actions">
+                    <button id="update1040FromSS" class="btn-primary">Push Results to Form 1040</button>
+                    <button id="backToOtherForms" class="btn-text">← Back to Other Forms</button>
+                </div>
+            </div>
+
+            <!-- Schedule B (Interactive) -->
+            <div id="schBSelection" class="sch-b-selection" style="display: none;">
+                <div class="worksheet-header">
+                    <h2>Schedule B</h2>
+                    <p class="selection-subtitle">Interest and Ordinary Dividends</p>
+                </div>
+
+                <div class="sch-b-layout">
+                    <!-- Part I: Interest -->
+                    <div class="sch-b-part">
+                        <div class="part-header">
+                            <h3>Part I: Interest</h3>
+                            <button id="addInterestRow" class="btn-secondary-small">+ Add Payer</button>
+                        </div>
+                        <table class="sch-b-table" id="interestTable">
+                            <thead>
+                                <tr>
+                                    <th>Payer Name</th>
+                                    <th>Amount</th>
+                                    <th width="40"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rows will be added dynamically -->
+                            </tbody>
+                        </table>
+                        <div class="part-total">
+                            <span>Total Interest (Line 4)</span>
+                            <span id="schBTotalInterest">$0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Part II: Ordinary Dividends -->
+                    <div class="sch-b-part">
+                        <div class="part-header">
+                            <h3>Part II: Ordinary Dividends</h3>
+                            <button id="addDividendRow" class="btn-secondary-small">+ Add Payer</button>
+                        </div>
+                        <table class="sch-b-table" id="dividendTable">
+                            <thead>
+                                <tr>
+                                    <th>Payer Name</th>
+                                    <th>Amount</th>
+                                    <th width="40"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rows will be added dynamically -->
+                            </tbody>
+                        </table>
+                        <div class="part-total">
+                            <span>Total Ordinary Dividends (Line 6)</span>
+                            <span id="schBTotalDividends">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="worksheet-actions">
+                    <button id="update1040FromSchB" class="btn-primary">Push Totals to Form 1040</button>
+                    <button id="backToOtherFormsFromSchB" class="btn-text">← Back to Other Forms</button>
+                </div>
+            </div>
+
+            <!-- Schedule D / Form 8949 (Interactive) -->
+            <div id="schDSelection" class="sch-d-selection" style="display: none;">
+                <div class="worksheet-header">
+                    <h2>Schedule D & Form 8949</h2>
+                    <p class="selection-subtitle">Capital Gains and Losses</p>
+                </div>
+
+                <div class="sch-d-layout">
+                    <div class="sch-d-part">
+                        <div class="part-header">
+                            <h3>Asset Transactions (Form 8949)</h3>
+                            <button id="addAssetRow" class="btn-secondary-small">+ Add Transaction</button>
+                        </div>
+                        <div class="table-container-horizontal">
+                            <table class="sch-d-table" id="assetTable">
+                                <thead>
+                                    <tr>
+                                        <th>Description of Property</th>
+                                        <th>Date Acquired</th>
+                                        <th>Date Sold</th>
+                                        <th>Proceeds</th>
+                                        <th>Cost Basis</th>
+                                        <th>Gain/Loss</th>
+                                        <th>Term</th>
+                                        <th width="40"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Rows will be added dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="sch-d-summary-grid">
+                        <div class="sch-d-summary-card">
+                            <h4>Short-Term Summary</h4>
+                            <div class="summary-row">
+                                <span>Short-Term Gain/Loss:</span>
+                                <span id="stTotal">$0.00</span>
+                            </div>
+                        </div>
+                        <div class="sch-d-summary-card">
+                            <h4>Long-Term Summary</h4>
+                            <div class="summary-row">
+                                <span>Long-Term Gain/Loss:</span>
+                                <span id="ltTotal">$0.00</span>
+                            </div>
+                        </div>
+                        <div class="sch-d-summary-card net">
+                            <h4>Net Capital Gain/Loss</h4>
+                            <div class="summary-row main">
+                                <span>Form 1040 Line 7:</span>
+                                <span id="netCapitalTotal" class="gain">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="worksheet-actions">
+                    <button id="update1040FromSchD" class="btn-primary">Push Results to Form 1040</button>
+                    <button id="backToOtherFormsFromSchD" class="btn-text">← Back to Other Forms</button>
+                </div>
+            </div>
+
+            <!-- Schedule 3 (Interactive) -->
+            <div id="sch3Selection" class="sch-3-selection" style="display: none;">
+                <div class="worksheet-header">
+                    <h2>Schedule 3</h2>
+                    <p class="selection-subtitle">Additional Credits and Payments</p>
+                </div>
+
+                <div class="sch-3-layout">
+                    <!-- Part I: Nonrefundable Credits -->
+                    <div class="sch-3-column">
+                        <div class="part-header">
+                            <h3>Part I: Nonrefundable Credits</h3>
+                        </div>
+                        <div class="ws-row">
+                            <span class="ws-step">1</span>
+                            <label class="ws-label">Foreign Tax Credit (Form 1116)</label>
+                            <input type="number" id="sch3Line1" class="ws-input sch3-line" placeholder="0.00"
+                                step="0.01">
+                        </div>
+                        <div class="ws-row">
+                            <span class="ws-step">2</span>
+                            <label class="ws-label">Child and Dependent Care (Form 2441)</label>
+                            <input type="number" id="sch3Line2" class="ws-input sch3-line" placeholder="0.00"
+                                step="0.01">
+                        </div>
+                        <div class="ws-row">
+                            <span class="ws-step">3</span>
+                            <label class="ws-label">Education Credits (Form 8863)</label>
+                            <input type="number" id="sch3Line3" class="ws-input sch3-line" placeholder="0.00"
+                                step="0.01">
+                        </div>
+                        <div class="ws-row">
+                            <span class="ws-step">4</span>
+                            <label class="ws-label">Retirement Savings Contributions (Saver's Credit)</label>
+                            <input type="number" id="sch3Line4" class="ws-input sch3-line" placeholder="0.00"
+                                step="0.01">
+                        </div>
+                        <div class="ws-row">
+                            <span class="ws-step">5</span>
+                            <label class="ws-label">Residential Clean Energy Credit (Form 5695)</label>
+                            <input type="number" id="sch3Line5" class="ws-input sch3-line" placeholder="0.00"
+                                step="0.01">
+                        </div>
+                        <div class="ws-row ws-calc">
+                            <span class="ws-step">8</span>
+                            <label class="ws-label">Total Nonrefundable Credits (Line 8)</label>
+                            <input type="text" id="sch3TotalPart1" class="ws-input" readonly placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <!-- Part II: Other Payments and Refundable Credits -->
+                    <div class="sch-3-column">
+                        <div class="part-header">
+                            <h3>Part II: Other Payments & Refundable Credits</h3>
+                        </div>
+                        <div class="ws-row">
+                            <span class="ws-step">9</span>
+                            <label class="ws-label">Net Premium Tax Credit (Form 8962)</label>
+                            <input type="number" id="sch3Line9" class="ws-input sch3-line" placeholder="0.00"
+                                step="0.01">
+                        </div>
+                        <div class="ws-row">
+                            <span class="ws-step">10</span>
+                            <label class="ws-label">Amount paid with request for extension to file</label>
+                            <input type="number" id="sch3Line10" class="ws-input sch3-line" placeholder="0.00"
+                                step="0.01">
+                        </div>
+                        <div class="ws-row ws-calc" style="margin-top: auto;">
+                            <span class="ws-step">15</span>
+                            <label class="ws-label">Total Other Payments (Line 15)</label>
+                            <input type="text" id="sch3TotalPart2" class="ws-input" readonly placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="worksheet-actions">
+                    <button id="update1040FromSch3" class="btn-primary">Push Totals to Form 1040</button>
+                    <button id="backToOtherFormsFromSch3" class="btn-text">← Back to Other Forms</button>
+                </div>
+            </div>
+
+            <!-- Form 8995 (Interactive) -->
+            <div id="f8995Selection" class="f8995-selection" style="display: none;">
+                <div class="worksheet-header">
+                    <h2>Form 8995</h2>
+                    <p class="selection-subtitle">Qualified Business Income Deduction Simplified Computation</p>
+                </div>
+
+                <div class="f8995-layout">
+                    <div class="f8995-part">
+                        <div class="part-header">
+                            <h3>Part I: Trade, Business, or Aggregation Information</h3>
+                            <button id="addQBIRow" class="btn-secondary-small">+ Add Business</button>
+                        </div>
+                        <table class="f8995-table" id="qbiTable">
+                            <thead>
+                                <tr>
+                                    <th>Trade or business name</th>
+                                    <th>Qualified business income (loss)</th>
+                                    <th width="40"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rows will be added dynamically -->
+                            </tbody>
+                        </table>
+                        <div class="ws-row ws-calc">
+                            <span class="ws-step">2</span>
+                            <label class="ws-label">Total qualified business income (loss)</label>
+                            <input type="text" id="f8995Line2" class="ws-input" readonly placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <div class="f8995-part">
+                        <div class="part-header">
+                            <h3>Part II: Deduction Computation</h3>
+                        </div>
+                        <div class="ws-row">
+                            <span class="ws-step">3</span>
+                            <label class="ws-label">Qualified REIT dividends and PTP income (loss)</label>
+                            <input type="number" id="f8995Line3" class="ws-input f8995-calc-input" placeholder="0.00"
+                                step="0.01">
+                        </div>
+                        <div class="ws-row ws-calc">
+                            <span class="ws-step">6</span>
+                            <label class="ws-label">20% of net QBI and qualified dividends (Step 4 + 5)</label>
+                            <input type="text" id="f8995Line6" class="ws-input" readonly placeholder="0.00">
+                        </div>
+
+                        <div class="ws-highlight-box">
+                            <h4>Taxable Income Limitation</h4>
+                            <div class="ws-row">
+                                <span class="ws-step">11</span>
+                                <label class="ws-label">Income limitation (20% of net taxable income)</label>
+                                <input type="text" id="f8995Line11" class="ws-input" readonly placeholder="0.00">
+                            </div>
+                        </div>
+
+                        <div class="ws-row ws-highlight">
+                            <span class="ws-step">15</span>
+                            <label class="ws-label"><strong>Qualified business income deduction (Lesser of 6 or
+                                    11)</strong></label>
+                            <input type="text" id="f8995Line15" class="ws-input highlight" readonly placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="worksheet-actions">
+                    <button id="update1040FromF8995" class="btn-primary">Push Result to Form 1040</button>
+                    <button id="backToOtherFormsFromF8995" class="btn-text">← Back to Other Forms</button>
+                </div>
+            </div>
+
+            <!-- Other Forms Selection (Hidden initially) -->
+            <div id="otherFormsSelection" class="other-forms-selection" style="display: none;">
+                <h2>Select Other Forms & Resources</h2>
+                <p class="selection-subtitle">View and complete additional tax schedules and worksheets</p>
+
+                <div class="other-forms-grid">
+                    <button class="other-form-card featured" data-form="sch-b"
+                        data-url="file:///c:/Users/mvaug/.gemini/antigravity/scratch/tax-calculator-2025/Schedule%20B%20Interest%20and%20Dividends.pdf">
+                        <div class="form-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </div>
+                        <div class="form-info">
+                            <h3>Schedule B</h3>
+                            <p>Interest & Dividends</p>
+                        </div>
+                        <span class="form-status"
+                            style="color: var(--primary-green); background: rgba(16, 185, 129, 0.1);">Ready to
+                            View</span>
+                    </button>
+                    <button class="other-form-card featured" data-form="sch-d"
+                        data-url="file:///c:/Users/mvaug/.gemini/antigravity/scratch/tax-calculator-2025/Schedule%20D%20Capital%20Gains%20and%20Losses.pdf">
+                        <div class="form-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </div>
+                        <div class="form-info">
+                            <h3>Schedule D</h3>
+                            <p>Capital Gains/Losses</p>
+                        </div>
+                        <span class="form-status"
+                            style="color: var(--primary-green); background: rgba(16, 185, 129, 0.1);">Ready to
+                            View</span>
+                    </button>
+                    <button class="other-form-card featured" data-form="sch-3"
+                        data-url="file:///c:/Users/mvaug/.gemini/antigravity/scratch/tax-calculator-2025/Schedule%203%20Credits%20and%20Payments.pdf">
+                        <div class="form-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </div>
+                        <div class="form-info">
+                            <h3>Schedule 3</h3>
+                            <p>Additional Credits</p>
+                        </div>
+                        <span class="form-status"
+                            style="color: var(--primary-green); background: rgba(16, 185, 129, 0.1);">Ready to
+                            View</span>
+                    </button>
+                    <button class="other-form-card featured" data-form="f8949"
+                        data-url="file:///c:/Users/mvaug/.gemini/antigravity/scratch/tax-calculator-2025/Form%208949%20Capital%20Assets.pdf">
+                        <div class="form-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </div>
+                        <div class="form-info">
+                            <h3>Form 8949</h3>
+                            <p>Asset Sales</p>
+                        </div>
+                        <span class="form-status"
+                            style="color: var(--primary-green); background: rgba(16, 185, 129, 0.1);">Ready to
+                            View</span>
+                    </button>
+                    <button class="other-form-card featured" data-form="f8995"
+                        data-url="file:///c:/Users/mvaug/.gemini/antigravity/scratch/tax-calculator-2025/Form%208995%20Business%20Income%20Deduction.pdf">
+                        <div class="form-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </div>
+                        <div class="form-info">
+                            <h3>Form 8995</h3>
+                            <p>QBI Deduction</p>
+                        </div>
+                        <span class="form-status"
+                            style="color: var(--primary-green); background: rgba(16, 185, 129, 0.1);">Ready to
+                            View</span>
+                    </button>
+                    <button class="other-form-card featured" data-form="ss-worksheet"
+                        data-url="file:///c:/Users/mvaug/.gemini/antigravity/scratch/tax-calculator-2025/Social-Secuirty-Benefits-Worksheet.pdf">
+                        <div class="form-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <div class="form-info">
+                            <h3>SS Worksheet</h3>
+                            <p>Benefit Calculator</p>
+                        </div>
+                        <span class="form-status"
+                            style="color: var(--primary-green); background: rgba(16, 185, 129, 0.1);">Ready to
+                            View</span>
+                    </button>
+                    <button class="other-form-card featured" data-form="tax-tables"
+                        data-url="file:///c:/Users/mvaug/.gemini/antigravity/scratch/tax-calculator-2025/Tax%20Tables%202025.pdf">
+                        <div class="form-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="3" y1="9" x2="21" y2="9"></line>
+                                <line x1="3" y1="15" x2="21" y2="15"></line>
+                                <line x1="9" y1="3" x2="9" y2="21"></line>
+                                <line x1="15" y1="3" x2="15" y2="21"></line>
+                            </svg>
+                        </div>
+                        <div class="form-info">
+                            <h3>Tax Tables</h3>
+                            <p>2025 Brackets</p>
+                        </div>
+                        <span class="form-status"
+                            style="color: var(--primary-green); background: rgba(16, 185, 129, 0.1);">Ready to
+                            View</span>
+                    </button>
+                    <button class="other-form-card featured" data-form="instructions"
+                        data-url="file:///c:/Users/mvaug/.gemini/antigravity/scratch/tax-calculator-2025/2025%20Instructions%20for%201040.pdf">
+                        <div class="form-icon" style="color: var(--primary-blue);">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="form-info">
+                            <h3>2025 Instructions</h3>
+                            <p>1040 & 1040-SR</p>
+                        </div>
+                        <span class="form-status"
+                            style="color: var(--primary-green); background: rgba(16, 185, 129, 0.1);">Ready to
+                            View</span>
+                    </button>
+                </div>
+
+                <button id="backToTaxTypeFromOther" class="btn-text">← Back to Tax Type Selection</button>
             </div>
 
             <!-- Indiana County Selection (Hidden initially) -->
@@ -336,8 +909,8 @@
                                     <div class="tooltip">
                                         <span class="tooltip-icon">?</span>
                                         <div class="tooltip-content">
-                                            <strong>What goes here:</strong> Tips you received but didn't report to your
-                                            employer. See instructions.
+                                            Enter the total of your tip income that was not reported on Form 1040, line
+                                            1a.
                                         </div>
                                     </div>
                                     <input type="number" id="line1c" class="input-field" placeholder="$0.00"
